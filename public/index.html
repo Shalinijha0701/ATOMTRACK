@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AtomTrack AI Portal</title>
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chart.js via CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- React and ReactDOM via CDN -->
+  <script crossorigin src="https://unpkg.com/react@17/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
+  <!-- Babel compiler for JSX -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+  <div id="root"></div>
+  <script type="text/babel">
+    // In the Vercel environment the API is served from the `/api` path,
+    // so the base URL is relative.
+    const API_URL = '/api';
+
+    function useFetch(url) {
+      const [data, setData] = React.useState(null);
+      React.useEffect(() => {
+        fetch(url)
+          .then(res => res.json())
+          .then(setData)
+          .catch(err => console.error(err));
+      }, [url]);
+      return data;
+    }
+
+    function App() {
+      const users = useFetch(API_URL + '/users') || [];
+      const [selectedUserId, setSelectedUserId] = React.useState('');
+      const selectedUser = users.find(u => u.id === selectedUserId);
+      function handleLogin(e) {
+        e.preventDefault();
+        const form = e.target;
+        const id = form.user.value;
+        setSelectedUserId(id);
+      }
+      if (!selectedUser) {
+        const roles = users.reduce((acc, u) => {
+          acc[u.role] = acc[u.role] || [];
+          acc[u.role].push(u);
+          return acc;
+        }, {});
+        return (
+          <div className="flex flex-col items-center justify-center py-20 px-4">
+            <h1 className="text-4xl font-bold text-blue-600 mb-6">AtomTrack AI</h1>
+            <form onSubmit={handleLogin} className="bg-white p-6 rounded-lg shadow-md w-full max-w-md">
+              <label htmlFor="user" className="block text-sm font-medium text-gray-700 mb-2">Select a user to log in</label>
+              <select id="user" name="user" className="w-full border-gray-300 rounded-md mb-4" required>
+                <option value="" disabled selected>Select user</option>
+                {Object.keys(roles).map(role => (
+                  <optgroup key={role} label={role.charAt(0).toUpperCase() + role.slice(1)}>
+                    {roles[role].map(u => (
+                      <option key={u.id} value={u.id}>{u.name}</option>
+                    ))}
+                  </optgroup>
+                ))}
+              </select>
+              <button type="submit" className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">Login</button>
+            </form>
+            <p className="mt-6 text-gray-500 text-sm text-center max-w-lg">
+              Choose any account to explore the Employee, Manager and Admin roles.
+            </p>
+          </div>
+        );
+      }
+      if (selectedUser.role === 'employee') return <EmployeeDashboard user={selectedUser} onLogout={() => setSelectedUserId('')} />;
+      if (selectedUser.role === 'manager') return <ManagerDashboard user={selectedUser} onLogout={() => setSelectedUserId('')} />;
+      if (selectedUser.role === 'admin') return <AdminDashboard user={selectedUser} onLogout={() => setSelectedUserId('')} />;
+      return null;
+    }
+    function EmployeeDashboard({ user, onLogout }) {
+      const [sheet, setSheet] = React.useState(null);
+      const [goals, setGoals] = React.useState([]);
+      const [loading, setLoading] = React.useState(true);
+      const [message, setMessage] = React.useState('');
+      const [quarter, setQuarter] = React.useState('Q1');
+      const [checkinData, setCheckinData] = React.useState({});
+      React.useEffect(() => {
+        fetch(`${API_URL}/goalsheets?employeeId=${user.id}`)
+          .then(res => res.json())
+          .then(sheets => {
+            if (sheets.length > 0) {
+              const gs = sheets[0];
+              setSheet(gs);
+              setGoals(gs.goals);
+            }
+            setLoading(false);
+          })
+          .catch(err => console.error(err));
+      }, [user.id]);
+      const totalWeight = goals.reduce((sum, g) => sum + Number(g.weightage || 0), 0);
+      function handleGoalChange(idx, field, value) {
+        setGoals(old => {
+          const newGoals = old.map((g, i) => i === idx ? { ...g, [field]: value } : g);
+          return newGoals;
+        });
+      }
+      function addGoal() {
+        setGoals([...goals, { thrust: '', title: '', unit: 'MAX', target: '', weightage: '' }]);
+      }
+      function removeGoal(idx) {
+        setGoals(goals.filter((_, i) => i !== idx));
+      }
+      function saveGoals() {
+        if (totalWeight !== 100) {
+          setMessage('Total weightage must equal 100%.');
+          return;
+        }
+        const payload = goals.map(g => ({ ...g, weightage: Number(g.weightage), target: g.unit === 'TIMELINE' ? g.target : Number(g.target) }));
+        fetch(`${API_URL}/goalsheets`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ employeeId: user.id, goals: payload })
+        })
+          .then(res => res.json())
+          .then(data => {
+            setSheet(data);
+            setMessage('Goals saved successfully');
+          })
+          .catch(err => console.error(err));
+      }
+      function submitGoals() {
+        if (!sheet) return;
+        fetch(`${API_URL}/goalsheets/submit`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sheetId: sheet.id, employeeId: user.id })
+        })
+          .then(res => res.json())
+          .then(data => {
+            setSheet(data);
+            setMessage('Submitted for manager approval');
+          });
+      }
+      function recordCheckin() {
+        if (!sheet) return;
+        const achievements = goals.map(g => ({ goalId: g.id, actual: checkinData[g.id] }));
+        fetch(`${API_URL}/checkins`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sheetId: sheet.id, employeeId: user.id, quarter, achievements, comment: '' })
+        })
+          .then(res => res.json())
+          .then(data => {
+            setSheet(data);
+            setMessage(`${quarter} check‑in recorded`);
+          });
+      }
+      if (loading) return <div className="p-6">Loading…</div>;
+      return (
+        <div className="p-6 max-w-5xl mx-auto">
+          <header className="flex justify-between items-center mb-4">
+            <h2 className="text-2xl font-bold">Welcome, {user.name}</h2>
+            <button onClick={onLogout} className="text-sm text-blue-600 underline">Logout</button>
+          </header>
+          {message && <div className="mb-4 p-2 bg-green-100 text-green-700 rounded">{message}</div>}
+          <h3 className="text-xl font-semibold mb-2">Goal Sheet</h3>
+          <p className="mb-2 text-gray-600 text-sm">Enter up to 8 goals.  Each goal must have a minimum weightage of 10%.  Total weightage must equal 100%.</p>
+          {goals.map((g, idx) => (
+            <div key={idx} className="border rounded p-4 mb-2 bg-white shadow-sm">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Thrust Area</label>
+                  <input type="text" value={g.thrust} onChange={e => handleGoalChange(idx, 'thrust', e.target.value)} className="mt-1 w-full border-gray-300 rounded" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Title</label>
+                  <input type="text" value={g.title} onChange={e => handleGoalChange(idx, 'title', e.target.value)} className="mt-1 w-full border-gray-300 rounded" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">UoM</label>
+                  <select value={g.unit} onChange={e => handleGoalChange(idx, 'unit', e.target.value)} className="mt-1 w-full border-gray-300 rounded">
+                    <option value="MAX">MAX</option>
+                    <option value="MIN">MIN</option>
+                    <option value="ZERO">ZERO</option>
+                    <option value="TIMELINE">TIMELINE</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Target {g.unit === 'TIMELINE' ? '(YYYY-MM-DD)' : ''}</label>
+                  <input type={g.unit === 'TIMELINE' ? 'date' : 'number'} value={g.target} onChange={e => handleGoalChange(idx, 'target', e.target.value)} className="mt-1 w-full border-gray-300 rounded" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Weightage (%)</label>
+                  <input type="number" value={g.weightage} onChange={e => handleGoalChange(idx, 'weightage', e.target.value)} className="mt-1 w-full border-gray-300 rounded" min="0" max="100" />
+                </div>
+              </div>
+              <button onClick={() => removeGoal(idx)} className="mt-2 text-xs text-red-500 underline">Remove</button>
+            </div>
+          ))}
+          {goals.length < 8 && <button onClick={addGoal} className="bg-gray-200 px-3 py-1 rounded text-sm">Add Goal</button>}
+          <div className="mt-4">
+            <div className="h-2 w-full bg-gray-200 rounded">
+              <div style={{ width: `${totalWeight}%` }} className={`h-full rounded ${totalWeight === 100 ? 'bg-green-500' : 'bg-red-500'}`}></div>
+            </div>
+            <p className="text-sm mt-1">Total Weightage: {totalWeight}%</p>
+          </div>
+          <div className="mt-4 flex gap-2">
+            <button onClick={saveGoals} className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Save Goals</button>
+            {sheet && (sheet.status === 'draft' || sheet.status === 'returned') && <button onClick={submitGoals} className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Submit to Manager</button>}
+          </div>
+          {sheet && sheet.status === 'approved' && (
+            <div className="mt-8">
+              <h3 className="text-xl font-semibold mb-2">Quarterly Check‑In</h3>
+              <div className="mb-2">
+                <label className="mr-2">Quarter:</label>
+                <select value={quarter} onChange={e => setQuarter(e.target.value)} className="border-gray-300 rounded">
+                  <option value="Q1">Q1</option>
+                  <option value="Q2">Q2</option>
+                  <option value="Q3">Q3</option>
+                  <option value="Q4">Q4</option>
+                </select>
+              </div>
+              {goals.map(g => (
+                <div key={g.id} className="mb-2">
+                  <label className="block text-sm font-medium text-gray-700">{g.title} actual:</label>
+                  <input type={g.unit === 'TIMELINE' ? 'date' : 'number'} onChange={e => setCheckinData({ ...checkinData, [g.id]: g.unit === 'TIMELINE' ? e.target.value : Number(e.target.value) })} className="mt-1 w-full border-gray-300 rounded" />
+                </div>
+              ))}
+              <button onClick={recordCheckin} className="mt-2 bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700">Record Check‑In</button>
+            </div>
+          )}
+          {sheet && sheet.quarterlyCheckins.length > 0 && (
+            <div className="mt-8">
+              <h3 className="text-xl font-semibold mb-2">Previous Check‑Ins</h3>
+              {sheet.quarterlyCheckins.map((qc, idx) => (
+                <div key={idx} className="mb-4 p-3 border rounded bg-white shadow-sm">
+                  <h4 className="font-semibold">{qc.quarter}</h4>
+                  <ul className="list-disc list-inside text-sm">
+                    {qc.achievements.map(a => {
+                      const goal = goals.find(g => g.id === a.goalId) || {};
+                      return <li key={a.goalId}>{goal.title}: {a.actual}</li>;
+                    })}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      );
+    }
+    function ManagerDashboard({ user, onLogout }) {
+      const [sheets, setSheets] = React.useState([]);
+      const [selectedSheet, setSelectedSheet] = React.useState(null);
+      const [comment, setComment] = React.useState('');
+      const [action, setAction] = React.useState('approve');
+      const [message, setMessage] = React.useState('');
+      React.useEffect(() => {
+        fetch(`${API_URL}/goalsheets?managerId=${user.id}`)
+          .then(res => res.json())
+          .then(setSheets);
+      }, [user.id]);
+      function viewSheet(sheet) {
+        setSelectedSheet(JSON.parse(JSON.stringify(sheet)));
+        setMessage('');
+      }
+      function handleGoalEdit(idx, field, value) {
+        setSelectedSheet(old => {
+          const newGoals = old.goals.map((g, i) => i === idx ? { ...g, [field]: field === 'weightage' || field === 'target' ? Number(value) : value } : g);
+          return { ...old, goals: newGoals };
+        });
+      }
+      function saveChanges() {
+        if (!selectedSheet) return;
+        fetch(`${API_URL}/goalsheets`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ employeeId: selectedSheet.employeeId, goals: selectedSheet.goals })
+        })
+          .then(res => res.json())
+          .then(data => {
+            setMessage('Changes saved');
+            setSheets(sheets.map(gs => gs.id === data.id ? data : gs));
+          });
+      }
+      function submitDecision() {
+        if (!selectedSheet) return;
+        fetch(`${API_URL}/goalsheets/approve`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sheetId: selectedSheet.id, managerId: user.id, action, comments: comment })
+        })
+          .then(res => res.json())
+          .then(data => {
+            setMessage(`Goal sheet ${action}d`);
+            setSheets(sheets.map(gs => gs.id === data.id ? data : gs));
+            setSelectedSheet(null);
+            setComment('');
+          });
+      }
+      return (
+        <div className="p-6 max-w-6xl mx-auto">
+          <header className="flex justify-between items-center mb-4">
+            <h2 className="text-2xl font-bold">Manager Dashboard ({user.name})</h2>
+            <button onClick={onLogout} className="text-sm text-blue-600 underline">Logout</button>
+          </header>
+          {message && <div className="mb-4 p-2 bg-green-100 text-green-700 rounded">{message}</div>}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="md:col-span-1">
+              <h3 className="font-semibold mb-2">Pending Goal Sheets</h3>
+              {sheets.filter(gs => gs.status === 'submitted').length === 0 && (
+                <p className="text-sm text-gray-500">No sheets awaiting your approval.</p>
+              )}
+              {sheets.filter(gs => gs.status === 'submitted').map(gs => {
+                return (
+                  <div key={gs.id} className="border rounded p-3 bg-white shadow-sm mb-2">
+                    <p className="font-semibold">Employee: {gs.employeeId}</p>
+                    <p>Status: {gs.status}</p>
+                    <button onClick={() => viewSheet(gs)} className="mt-1 text-xs text-blue-500 underline">Review</button>
+                  </div>
+                );
+              })}
+            </div>
+            {selectedSheet && (
+              <div className="md:col-span-2">
+                <h3 className="font-semibold mb-2">Review Sheet</h3>
+                {selectedSheet.goals.map((g, idx) => (
+                  <div key={idx} className="border rounded p-3 mb-2 bg-white shadow-sm">
+                    <p className="font-semibold mb-1">{g.title}</p>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
+                      <div>
+                        <label className="block font-medium">Target</label>
+                        <input type="number" value={g.target} onChange={e => handleGoalEdit(idx, 'target', e.target.value)} className="mt-1 w-full border-gray-300 rounded" />
+                      </div>
+                      <div>
+                        <label className="block font-medium">Weightage (%)</label>
+                        <input type="number" value={g.weightage} onChange={e => handleGoalEdit(idx, 'weightage', e.target.value)} className="mt-1 w-full border-gray-300 rounded" />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+                <button onClick={saveChanges} className="mb-4 bg-gray-200 px-3 py-1 rounded">Save Changes</button>
+                <div className="mb-2">
+                  <label className="block text-sm font-medium">Manager Comment</label>
+                  <textarea value={comment} onChange={e => setComment(e.target.value)} className="w-full border-gray-300 rounded mt-1"></textarea>
+                </div>
+                <div className="flex gap-2 mb-4">
+                  <label className="flex items-center">
+                    <input type="radio" name="decision" value="approve" checked={action === 'approve'} onChange={() => setAction('approve')} className="mr-1" /> Approve
+                  </label>
+                  <label className="flex items-center">
+                    <input type="radio" name="decision" value="return" checked={action === 'return'} onChange={() => setAction('return')} className="mr-1" /> Return
+                  </label>
+                </div>
+                <button onClick={submitDecision} className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Submit Decision</button>
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    }
+    function AdminDashboard({ user, onLogout }) {
+      const [sharedGoal, setSharedGoal] = React.useState({ thrust: '', title: '', unit: 'MAX', target: '', weightage: '', employeeIds: [] });
+      const [allUsers, setAllUsers] = React.useState([]);
+      const [analytics, setAnalytics] = React.useState(null);
+      const [audit, setAudit] = React.useState([]);
+      const [message, setMessage] = React.useState('');
+      React.useEffect(() => {
+        fetch(`${API_URL}/users`).then(res => res.json()).then(setAllUsers);
+        fetch(`${API_URL}/analytics`).then(res => res.json()).then(setAnalytics);
+        fetch(`${API_URL}/audit`).then(res => res.json()).then(setAudit);
+      }, []);
+      function handleSharedChange(field, value) {
+        setSharedGoal(old => ({ ...old, [field]: value }));
+      }
+      function handleEmployeeCheckbox(id) {
+        setSharedGoal(old => {
+          const list = old.employeeIds.includes(id) ? old.employeeIds.filter(eid => eid !== id) : [...old.employeeIds, id];
+          return { ...old, employeeIds: list };
+        });
+      }
+      function createShared() {
+        if (!sharedGoal.thrust || !sharedGoal.title || !sharedGoal.unit || !sharedGoal.target || !sharedGoal.weightage || sharedGoal.employeeIds.length === 0) {
+          setMessage('Please fill all fields and select employees');
+          return;
+        }
+        const payload = { ...sharedGoal, target: sharedGoal.unit === 'TIMELINE' ? sharedGoal.target : Number(sharedGoal.target), weightage: Number(sharedGoal.weightage), adminId: user.id };
+        fetch(`${API_URL}/sharedGoals`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        }).then(res => res.json()).then(() => {
+          setMessage('Shared goal created');
+          setSharedGoal({ thrust: '', title: '', unit: 'MAX', target: '', weightage: '', employeeIds: [] });
+        });
+      }
+      React.useEffect(() => {
+        if (analytics) {
+          drawCharts(analytics);
+        }
+      }, [analytics]);
+      return (
+        <div className="p-6 max-w-7xl mx-auto">
+          <header className="flex justify-between items-center mb-4">
+            <h2 className="text-2xl font-bold">Admin Dashboard ({user.name})</h2>
+            <button onClick={onLogout} className="text-sm text-blue-600 underline">Logout</button>
+          </header>
+          {message && <div className="mb-4 p-2 bg-green-100 text-green-700 rounded">{message}</div>}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <h3 className="font-semibold mb-2">Create Shared Goal</h3>
+              <div className="bg-white p-4 rounded shadow">
+                <div className="mb-2">
+                  <label className="block text-sm font-medium">Thrust</label>
+                  <input type="text" value={sharedGoal.thrust} onChange={e => handleSharedChange('thrust', e.target.value)} className="w-full border-gray-300 rounded mt-1" />
+                </div>
+                <div className="mb-2">
+                  <label className="block text-sm font-medium">Title</label>
+                  <input type="text" value={sharedGoal.title} onChange={e => handleSharedChange('title', e.target.value)} className="w-full border-gray-300 rounded mt-1" />
+                </div>
+                <div className="mb-2">
+                  <label className="block text-sm font-medium">UoM</label>
+                  <select value={sharedGoal.unit} onChange={e => handleSharedChange('unit', e.target.value)} className="w-full border-gray-300 rounded mt-1">
+                    <option value="MAX">MAX</option>
+                    <option value="MIN">MIN</option>
+                    <option value="ZERO">ZERO</option>
+                    <option value="TIMELINE">TIMELINE</option>
+                  </select>
+                </div>
+                <div className="mb-2">
+                  <label className="block text-sm font-medium">Target {sharedGoal.unit === 'TIMELINE' ? '(YYYY-MM-DD)' : ''}</label>
+                  <input type={sharedGoal.unit === 'TIMELINE' ? 'date' : 'number'} value={sharedGoal.target} onChange={e => handleSharedChange('target', e.target.value)} className="w-full border-gray-300 rounded mt-1" />
+                </div>
+                <div className="mb-2">
+                  <label className="block text-sm font-medium">Weightage (%)</label>
+                  <input type="number" value={sharedGoal.weightage} onChange={e => handleSharedChange('weightage', e.target.value)} className="w-full border-gray-300 rounded mt-1" />
+                </div>
+                <div className="mb-2">
+                  <label className="block text-sm font-medium">Assign to Employees</label>
+                  <div className="grid grid-cols-2 gap-1 max-h-32 overflow-y-auto border p-2 rounded">
+                    {allUsers.filter(u => u.role === 'employee').map(u => (
+                      <label key={u.id} className="flex items-center text-sm">
+                        <input type="checkbox" checked={sharedGoal.employeeIds.includes(u.id)} onChange={() => handleEmployeeCheckbox(u.id)} className="mr-1" /> {u.name}
+                      </label>
+                    ))}
+                  </div>
+                </div>
+                <button onClick={createShared} className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Create Shared Goal</button>
+              </div>
+            </div>
+            <div>
+              <h3 className="font-semibold mb-2">Analytics</h3>
+              <div className="bg-white p-4 rounded shadow">
+                <canvas id="chart1" height="200"></canvas>
+                <canvas id="chart2" height="200" className="mt-4"></canvas>
+              </div>
+            </div>
+          </div>
+          <div className="mt-8">
+            <h3 className="font-semibold mb-2">Audit Logs</h3>
+            <div className="bg-white p-4 rounded shadow max-h-60 overflow-y-auto text-sm">
+              {audit.length === 0 ? <p>No audit logs yet.</p> : audit.map(entry => (
+                <div key={entry.id} className="mb-2 border-b pb-1">
+                  <p><strong>{entry.timestamp}</strong> – {entry.message}</p>
+                  <p>Actor: {entry.actorId}</p>
+                  <p>Resource: {entry.resource}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      );
+    }
+    function drawCharts(analytics) {
+      if (window.chart1) window.chart1.destroy();
+      if (window.chart2) window.chart2.destroy();
+      const ctx1 = document.getElementById('chart1').getContext('2d');
+      const thrustLabels = Object.keys(analytics.goalDistribution);
+      const thrustData = Object.values(analytics.goalDistribution);
+      window.chart1 = new Chart(ctx1, {
+        type: 'pie',
+        data: {
+          labels: thrustLabels,
+          datasets: [{ data: thrustData }]
+        },
+        options: { plugins: { legend: { position: 'bottom' } }, title: { display: true, text: 'Goals by Thrust Area' } }
+      });
+      const ctx2 = document.getElementById('chart2').getContext('2d');
+      const uomLabels = Object.keys(analytics.uomDistribution);
+      const uomData = Object.values(analytics.uomDistribution);
+      window.chart2 = new Chart(ctx2, {
+        type: 'bar',
+        data: { labels: uomLabels, datasets: [{ label: 'Count', data: uomData }] },
+        options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } }, title: { display: true, text: 'UoM Distribution' } }
+      });
+    }
+    ReactDOM.render(<App />, document.getElementById('root'));
+  </script>
+</body>
+</html>

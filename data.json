@@ -1,0 +1,58 @@
+{
+  "users": [
+    {
+      "id": "u1",
+      "name": "Alice",
+      "role": "employee",
+      "managerId": "u3"
+    },
+    {
+      "id": "u2",
+      "name": "Bob",
+      "role": "employee",
+      "managerId": "u3"
+    },
+    {
+      "id": "u3",
+      "name": "Mary",
+      "role": "manager"
+    },
+    {
+      "id": "u4",
+      "name": "Adam",
+      "role": "admin"
+    }
+  ],
+  "goalSheets": [
+    {
+      "id": "sheet1",
+      "employeeId": "u1",
+      "status": "draft",
+      "goals": [
+        {
+          "id": "g100",
+          "thrust": "Operational Excellence",
+          "title": "Reduce complaint turnaround time",
+          "unit": "MIN",
+          "target": 48,
+          "weightage": 30,
+          "shared": false
+        },
+        {
+          "id": "g101",
+          "thrust": "Customer Experience",
+          "title": "Increase customer satisfaction score",
+          "unit": "MAX",
+          "target": 90,
+          "weightage": 70,
+          "shared": false
+        }
+      ],
+      "quarterlyCheckins": [],
+      "history": []
+    }
+  ],
+  "sharedGoals": [],
+  "auditLogs": [],
+  "notifications": []
+}
