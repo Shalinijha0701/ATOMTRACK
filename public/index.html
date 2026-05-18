@@ -1,498 +1,974 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AtomTrack AI Portal</title>
-  <!-- Tailwind CSS via CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Chart.js via CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <!-- React and ReactDOM via CDN -->
-  <script crossorigin src="https://unpkg.com/react@17/umd/react.development.js"></script>
-  <script crossorigin src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
-  <!-- Babel compiler for JSX -->
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AtomTrack AI — Enterprise Goal Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#08090D;--sb:#0C0E15;--card:#111420;--card2:#161B28;
+  --b:rgba(255,255,255,0.07);--b2:rgba(255,255,255,0.13);
+  --blue:#5B8FF9;--blue-d:rgba(91,143,249,0.14);
+  --teal:#36CFC9;--teal-d:rgba(54,207,201,0.12);
+  --amber:#FFA940;--amber-d:rgba(255,169,64,0.12);
+  --red:#FF6B6B;--red-d:rgba(255,107,107,0.12);
+  --green:#52C41A;--green-d:rgba(82,196,26,0.12);
+  --purple:#9B72F8;--purple-d:rgba(155,114,248,0.13);
+  --t:#E2E8F8;--t2:#8892A8;--t3:#454D60;
+  --font:'Plus Jakarta Sans',sans-serif;--mono:'DM Mono',monospace;
+  --r:12px;--rs:8px;--rl:16px;
+}
+body{font-family:var(--font);background:var(--bg);color:var(--t);min-height:100vh;overflow:hidden}
+.app{display:flex;height:100vh}
+
+/* SIDEBAR */
+.sb{width:232px;background:var(--sb);border-right:1px solid var(--b);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto}
+.sb-logo{padding:18px 18px 14px;border-bottom:1px solid var(--b)}
+.logo-row{display:flex;align-items:center;gap:10px}
+.logo-icon{width:34px;height:34px;background:linear-gradient(135deg,var(--blue),var(--purple));border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:800;color:#fff;flex-shrink:0;letter-spacing:-1px}
+.logo-name{font-size:15px;font-weight:800;color:var(--t);letter-spacing:-0.4px}
+.logo-tag{font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:0.6px;margin-top:1px}
+.role-box{padding:12px 14px;border-bottom:1px solid var(--b)}
+.role-lbl{font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:7px}
+.role-pills{display:flex;gap:4px}
+.rpill{padding:5px 11px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid var(--b);background:transparent;color:var(--t2);transition:all .2s;font-family:var(--font)}
+.rpill:hover{color:var(--t);border-color:var(--b2)}
+.rpill.re{background:var(--blue-d);border-color:var(--blue);color:var(--blue)}
+.rpill.rm{background:var(--teal-d);border-color:var(--teal);color:var(--teal)}
+.rpill.ra{background:var(--purple-d);border-color:var(--purple);color:var(--purple)}
+nav.ns{padding:10px 10px 4px}
+.nlbl{font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:0.6px;padding:0 8px 6px}
+.ni{display:flex;align-items:center;gap:9px;padding:7px 10px;border-radius:var(--rs);cursor:pointer;color:var(--t2);font-size:13px;font-weight:500;position:relative;margin-bottom:1px;transition:all .18s;user-select:none}
+.ni:hover{background:rgba(255,255,255,0.04);color:var(--t)}
+.ni.act{background:var(--blue-d);color:var(--blue)}
+.ni.act::before{content:'';position:absolute;left:0;top:4px;bottom:4px;width:2px;background:var(--blue);border-radius:2px}
+.nbadge{margin-left:auto;background:var(--red);color:#fff;font-size:9px;font-weight:700;padding:2px 6px;border-radius:10px;font-family:var(--mono)}
+.sb-bot{margin-top:auto;padding:14px;border-top:1px solid var(--b)}
+.ucard{display:flex;align-items:center;gap:10px}
+.av{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0}
+.ave{background:var(--blue-d);color:var(--blue);border:1px solid rgba(91,143,249,0.4)}
+.avm{background:var(--teal-d);color:var(--teal);border:1px solid rgba(54,207,201,0.4)}
+.ava{background:var(--purple-d);color:var(--purple);border:1px solid rgba(155,114,248,0.4)}
+.uname{font-size:13px;font-weight:600;color:var(--t)}
+.urole{font-size:11px;color:var(--t3)}
+
+/* MAIN */
+.main{flex:1;overflow-y:auto;background:var(--bg)}
+.topbar{padding:14px 26px;border-bottom:1px solid var(--b);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:rgba(8,9,13,0.94);backdrop-filter:blur(12px);z-index:10}
+.tb-t{font-size:16px;font-weight:700;color:var(--t);letter-spacing:-0.3px}
+.tb-s{font-size:12px;color:var(--t3);margin-top:2px}
+.tb-acts{display:flex;gap:8px;align-items:center}
+.btn{padding:8px 16px;border-radius:var(--rs);font-size:13px;font-weight:600;font-family:var(--font);cursor:pointer;border:none;transition:all .2s;display:flex;align-items:center;gap:6px}
+.btn-g{background:rgba(255,255,255,0.05);color:var(--t2);border:1px solid var(--b)}
+.btn-g:hover{background:rgba(255,255,255,0.08);color:var(--t)}
+.btn-p{background:var(--blue);color:#fff}
+.btn-p:hover{background:#4A7EE8;transform:translateY(-1px)}
+.btn-p:disabled{opacity:.35;cursor:not-allowed;transform:none}
+.btn-s{background:var(--green);color:#fff}
+.content{padding:22px 26px}
+.view{display:none;animation:fadeIn .22s ease}
+.view.act{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+
+/* METRICS */
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.mc{background:var(--card);border:1px solid var(--b);border-radius:var(--r);padding:16px 18px;position:relative;overflow:hidden;transition:border-color .2s}
+.mc:hover{border-color:var(--b2)}
+.mc::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.mc.bl::before{background:linear-gradient(90deg,var(--blue),transparent)}
+.mc.tl::before{background:linear-gradient(90deg,var(--teal),transparent)}
+.mc.am::before{background:linear-gradient(90deg,var(--amber),transparent)}
+.mc.rd::before{background:linear-gradient(90deg,var(--red),transparent)}
+.mc.gr::before{background:linear-gradient(90deg,var(--green),transparent)}
+.mc.pu::before{background:linear-gradient(90deg,var(--purple),transparent)}
+.ml{font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px}
+.mv{font-size:28px;font-weight:800;color:var(--t);font-family:var(--mono);line-height:1}
+.ms{font-size:11px;color:var(--t3);margin-top:5px}
+.mi{position:absolute;right:16px;top:16px;font-size:20px;opacity:.1}
+
+/* LAYOUT */
+.two-col{display:grid;grid-template-columns:1fr 320px;gap:14px}
+.rp{display:flex;flex-direction:column;gap:12px}
+.sh{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.st{font-size:14px;font-weight:700;color:var(--t)}
+.ss{font-size:12px;color:var(--t3);margin-top:2px}
+
+/* CARDS */
+.pcard{background:var(--card);border:1px solid var(--b);border-radius:var(--r);padding:15px}
+.pt{font-size:11px;font-weight:700;color:var(--t);margin-bottom:11px;text-transform:uppercase;letter-spacing:0.4px}
+.ir{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--b)}
+.ir:last-child{border-bottom:none;padding-bottom:0}
+.ik{font-size:12px;color:var(--t3)}
+.iv{font-size:12px;font-weight:600;color:var(--t);font-family:var(--mono)}
+
+/* WEIGHTAGE BAR */
+.wb-wrap{background:var(--card);border:1px solid var(--b);border-radius:var(--r);padding:16px 18px;margin-bottom:18px}
+.wb-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.wb-lbl{font-size:13px;font-weight:600;color:var(--t)}
+.wb-val{font-size:22px;font-weight:800;font-family:var(--mono)}
+.wb-val.wok{color:var(--green)}.wb-val.ww{color:var(--amber)}.wb-val.wo{color:var(--red)}
+.wb-track{height:8px;background:rgba(255,255,255,0.05);border-radius:4px;overflow:hidden}
+.wb-fill{height:100%;border-radius:4px;transition:width .4s cubic-bezier(.4,0,.2,1),background .3s}
+.wb-fill.fok{background:linear-gradient(90deg,var(--green),#36E0A8)}
+.wb-fill.fw{background:linear-gradient(90deg,var(--amber),#FFCA28)}
+.wb-fill.fo{background:linear-gradient(90deg,var(--red),#FF8E8E)}
+.wb-msg{font-size:12px;margin-top:7px;display:flex;align-items:center;gap:5px}
+.wb-msg.mok{color:var(--green)}.wb-msg.mw{color:var(--amber)}.wb-msg.mo{color:var(--red)}
+
+/* GOAL CARDS */
+.glist{display:flex;flex-direction:column;gap:10px}
+.gc{background:var(--card);border:1px solid var(--b);border-radius:var(--r);padding:14px 16px;transition:all .2s;position:relative}
+.gc:hover{border-color:var(--b2);background:var(--card2)}
+.gc-h{display:flex;align-items:flex-start;gap:11px}
+.gnum{width:26px;height:26px;border-radius:6px;background:var(--blue-d);color:var(--blue);font-size:11px;font-weight:700;font-family:var(--mono);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.gi{flex:1}
+.gt{font-size:10px;font-weight:600;color:var(--t3);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:3px}
+.gtitle{font-size:13px;font-weight:700;color:var(--t);margin-bottom:3px;line-height:1.4}
+.gdesc{font-size:11px;color:var(--t3);line-height:1.5}
+.gmeta{display:flex;align-items:center;gap:6px;margin-top:9px;flex-wrap:wrap}
+.tag{padding:3px 9px;border-radius:20px;font-size:10px;font-weight:700}
+.tuom{background:var(--blue-d);color:var(--blue)}
+.ttgt{background:rgba(255,255,255,0.05);color:var(--t2);border:1px solid var(--b)}
+.tshared{background:var(--teal-d);color:var(--teal)}
+.gw{font-size:17px;font-weight:800;font-family:var(--mono);color:var(--t);text-align:right;min-width:48px}
+.gctrl{display:flex;gap:4px;align-items:center}
+.ibtn{width:27px;height:27px;border-radius:6px;border:1px solid var(--b);background:transparent;color:var(--t3);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;transition:all .18s;font-family:var(--mono)}
+.ibtn:hover{background:rgba(255,255,255,0.05);color:var(--t);border-color:var(--b2)}
+.sbar{margin-top:10px}
+.sl{font-size:11px;color:var(--t3);margin-bottom:3px;display:flex;justify-content:space-between}
+.strack{height:3px;background:rgba(255,255,255,0.06);border-radius:2px;overflow:hidden}
+.sfill{height:100%;border-radius:2px;transition:width .5s}
+.sfill.sg{background:var(--green)}.sfill.sa{background:var(--amber)}.sfill.sr{background:var(--red)}
+.cg{color:var(--green)}.ca{color:var(--amber)}.cr{color:var(--red)}
+
+/* STATUS BADGES */
+.sb2{display:inline-flex;align-items:center;gap:5px;padding:4px 9px;border-radius:20px;font-size:10px;font-weight:700}
+.sb2::before{content:'';width:5px;height:5px;border-radius:50%;flex-shrink:0}
+.bdraft{background:rgba(255,255,255,0.06);color:var(--t2)}.bdraft::before{background:var(--t3)}
+.bsub{background:var(--blue-d);color:var(--blue)}.bsub::before{background:var(--blue)}
+.bapp{background:var(--green-d);color:var(--green)}.bapp::before{background:var(--green)}
+.blk{background:var(--purple-d);color:var(--purple)}.blk::before{background:var(--purple)}
+.bret{background:var(--red-d);color:var(--red)}.bret::before{background:var(--red)}
+.bod{background:var(--amber-d);color:var(--amber)}.bod::before{background:var(--amber)}
+
+/* TABLE */
+.tcard{background:var(--card);border:1px solid var(--b);border-radius:var(--r);overflow:hidden}
+.tcard table{width:100%;border-collapse:collapse}
+.tcard th{font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:0.5px;padding:11px 16px;text-align:left;border-bottom:1px solid var(--b);background:rgba(255,255,255,0.015)}
+.tcard td{font-size:12px;color:var(--t2);padding:12px 16px;border-bottom:1px solid var(--b)}
+.tcard tr:last-child td{border-bottom:none}
+.tcard tr:hover td{background:rgba(255,255,255,0.018)}
+.tdname{font-weight:700;color:var(--t);font-size:13px}
+.mini-bar{display:flex;align-items:center;gap:7px}
+.mini-t{flex:1;height:3px;background:rgba(255,255,255,0.05);border-radius:2px;overflow:hidden;max-width:70px}
+.mini-f{height:100%;border-radius:2px}
+.mini-f.mg{background:var(--green)}.mini-f.ma{background:var(--amber)}.mini-f.mr{background:var(--red)}
+.mini-v{font-family:var(--mono);font-size:11px;font-weight:700}
+
+/* CHART */
+.cgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px}
+.ccard{background:var(--card);border:1px solid var(--b);border-radius:var(--r);padding:16px 18px}
+.ctitle{font-size:13px;font-weight:700;color:var(--t);margin-bottom:14px}
+.bar-chart{display:flex;align-items:flex-end;gap:6px;height:90px}
+.bcol{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px}
+.bfill{width:100%;border-radius:3px 3px 0 0;transition:height .6s cubic-bezier(.4,0,.2,1)}
+.blabel{font-size:9px;color:var(--t3);text-align:center;font-family:var(--mono)}
+
+/* AUDIT */
+.alist{display:flex;flex-direction:column}
+.aitem{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--b)}
+.aitem:last-child{border-bottom:none}
+.adotcol{display:flex;flex-direction:column;align-items:center;padding-top:4px}
+.adot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.aline{width:1px;flex:1;background:var(--b);margin-top:4px}
+.aitem:last-child .aline{display:none}
+.atxt{font-size:12px;color:var(--t2);line-height:1.5}
+.atxt strong{color:var(--t);font-weight:600}
+.atime{font-size:10px;color:var(--t3);margin-top:2px;font-family:var(--mono)}
+
+/* TEAM GRID */
+.tgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px}
+.tmcard{background:var(--card);border:1px solid var(--b);border-radius:var(--r);padding:14px;cursor:pointer;transition:all .2s}
+.tmcard:hover{border-color:var(--b2);transform:translateY(-2px)}
+.tmcard.tp{border-left:3px solid var(--amber)}
+.tmcard.ta{border-left:3px solid var(--green)}
+.tmcard.to{border-left:3px solid var(--red)}
+.tmname{font-size:13px;font-weight:700;color:var(--t);margin-bottom:2px}
+.tmdept{font-size:10px;color:var(--t3);margin-bottom:10px}
+
+/* CYCLE BANNER */
+.cbanner{background:linear-gradient(135deg,rgba(91,143,249,.1),rgba(155,114,248,.07));border:1px solid rgba(91,143,249,.2);border-radius:var(--r);padding:12px 18px;display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+.ci{font-size:13px;font-weight:700;color:var(--blue)}
+.cs{font-size:11px;color:var(--t3);margin-top:1px}
+.csteps{display:flex}
+.cstep{padding:5px 12px;font-size:10px;font-weight:700;border:1px solid var(--b);color:var(--t3);font-family:var(--mono)}
+.cstep:first-child{border-radius:6px 0 0 6px}.cstep:last-child{border-radius:0 6px 6px 0}
+.cstep.cur{background:var(--blue-d);border-color:var(--blue);color:var(--blue)}
+.cstep.don{background:var(--green-d);border-color:var(--green);color:var(--green)}
+
+/* ADD GOAL BTN */
+.add-btn{width:100%;padding:13px;border-radius:var(--r);border:1px dashed rgba(255,255,255,0.1);background:transparent;color:var(--t3);font-size:13px;font-weight:600;font-family:var(--font);cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:10px}
+.add-btn:hover{border-color:var(--blue);color:var(--blue);background:var(--blue-d)}
+
+/* DONUT */
+.donut-wrap{display:flex;align-items:center;gap:18px}
+.dleg{display:flex;flex-direction:column;gap:7px}
+.dli{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--t2)}
+.dd{width:8px;height:8px;border-radius:2px;flex-shrink:0}
+
+/* QTR TABS */
+.qtabs{display:flex;gap:4px;margin-bottom:18px}
+.qt{padding:6px 14px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;border:1px solid var(--b);background:transparent;color:var(--t3);font-family:var(--font);transition:all .18s}
+.qt.qa{background:var(--blue-d);border-color:var(--blue);color:var(--blue)}
+.qt.qd{background:var(--green-d);border-color:var(--green);color:var(--green)}
+
+/* CHECKIN CARD */
+.chcard{background:var(--card);border:1px solid var(--b);border-radius:var(--r);padding:16px 18px;margin-bottom:12px}
+.chh{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.chg{font-size:13px;font-weight:700;color:var(--t)}
+
+/* ESC */
+.erow{display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid var(--b)}
+.erow:last-child{border-bottom:none}
+.elvl{font-size:9px;font-weight:700;padding:3px 8px;border-radius:4px;font-family:var(--mono)}
+.el1{background:var(--amber-d);color:var(--amber)}
+.el2{background:var(--red-d);color:var(--red)}
+.el3{background:var(--red-d);color:var(--red);border:1px solid rgba(255,107,107,0.4)}
+
+/* LEADER */
+.ldrow{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.ldnum{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0}
+
+/* SHARED INDICATOR */
+.sindic{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--teal);margin-top:4px}
+
+/* TOAST */
+.toast{position:fixed;bottom:22px;right:22px;background:var(--card2);border:1px solid var(--b2);border-radius:var(--r);padding:12px 16px;display:flex;align-items:center;gap:9px;font-size:13px;font-weight:500;color:var(--t);box-shadow:0 8px 32px rgba(0,0,0,0.6);transform:translateY(80px);opacity:0;transition:all .3s cubic-bezier(.4,0,.2,1);z-index:1000}
+.toast.show{transform:translateY(0);opacity:1}
+.toast-icon{font-size:15px}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:3px}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.07);border-radius:2px}
+
+/* AI BADGE */
+.ai-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700;background:linear-gradient(135deg,var(--blue-d),var(--purple-d));border:1px solid rgba(155,114,248,0.3);color:var(--purple)}
+
+textarea{outline:none;resize:none}
+input[type=text]{outline:none}
+</style>
 </head>
-<body class="bg-gray-50 min-h-screen">
-  <div id="root"></div>
-  <script type="text/babel">
-    // In the Vercel environment the API is served from the `/api` path,
-    // so the base URL is relative.
-    const API_URL = '/api';
+<body>
 
-    function useFetch(url) {
-      const [data, setData] = React.useState(null);
-      React.useEffect(() => {
-        fetch(url)
-          .then(res => res.json())
-          .then(setData)
-          .catch(err => console.error(err));
-      }, [url]);
-      return data;
-    }
+<div class="app">
+<!-- SIDEBAR -->
+<aside class="sb">
+  <div class="sb-logo">
+    <div class="logo-row">
+      <div class="logo-icon">AT</div>
+      <div><div class="logo-name">AtomTrack AI</div><div class="logo-tag">Performance Portal</div></div>
+    </div>
+  </div>
+  <div class="role-box">
+    <div class="role-lbl">Demo — Switch Role</div>
+    <div class="role-pills">
+      <button class="rpill re" onclick="switchRole('e')">Employee</button>
+      <button class="rpill" onclick="switchRole('m')">Manager</button>
+      <button class="rpill" onclick="switchRole('a')">Admin</button>
+    </div>
+  </div>
 
-    function App() {
-      const users = useFetch(API_URL + '/users') || [];
-      const [selectedUserId, setSelectedUserId] = React.useState('');
-      const selectedUser = users.find(u => u.id === selectedUserId);
-      function handleLogin(e) {
-        e.preventDefault();
-        const form = e.target;
-        const id = form.user.value;
-        setSelectedUserId(id);
-      }
-      if (!selectedUser) {
-        const roles = users.reduce((acc, u) => {
-          acc[u.role] = acc[u.role] || [];
-          acc[u.role].push(u);
-          return acc;
-        }, {});
-        return (
-          <div className="flex flex-col items-center justify-center py-20 px-4">
-            <h1 className="text-4xl font-bold text-blue-600 mb-6">AtomTrack AI</h1>
-            <form onSubmit={handleLogin} className="bg-white p-6 rounded-lg shadow-md w-full max-w-md">
-              <label htmlFor="user" className="block text-sm font-medium text-gray-700 mb-2">Select a user to log in</label>
-              <select id="user" name="user" className="w-full border-gray-300 rounded-md mb-4" required>
-                <option value="" disabled selected>Select user</option>
-                {Object.keys(roles).map(role => (
-                  <optgroup key={role} label={role.charAt(0).toUpperCase() + role.slice(1)}>
-                    {roles[role].map(u => (
-                      <option key={u.id} value={u.id}>{u.name}</option>
-                    ))}
-                  </optgroup>
-                ))}
-              </select>
-              <button type="submit" className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">Login</button>
-            </form>
-            <p className="mt-6 text-gray-500 text-sm text-center max-w-lg">
-              Choose any account to explore the Employee, Manager and Admin roles.
-            </p>
-          </div>
-        );
-      }
-      if (selectedUser.role === 'employee') return <EmployeeDashboard user={selectedUser} onLogout={() => setSelectedUserId('')} />;
-      if (selectedUser.role === 'manager') return <ManagerDashboard user={selectedUser} onLogout={() => setSelectedUserId('')} />;
-      if (selectedUser.role === 'admin') return <AdminDashboard user={selectedUser} onLogout={() => setSelectedUserId('')} />;
-      return null;
-    }
-    function EmployeeDashboard({ user, onLogout }) {
-      const [sheet, setSheet] = React.useState(null);
-      const [goals, setGoals] = React.useState([]);
-      const [loading, setLoading] = React.useState(true);
-      const [message, setMessage] = React.useState('');
-      const [quarter, setQuarter] = React.useState('Q1');
-      const [checkinData, setCheckinData] = React.useState({});
-      React.useEffect(() => {
-        fetch(`${API_URL}/goalsheets?employeeId=${user.id}`)
-          .then(res => res.json())
-          .then(sheets => {
-            if (sheets.length > 0) {
-              const gs = sheets[0];
-              setSheet(gs);
-              setGoals(gs.goals);
-            }
-            setLoading(false);
-          })
-          .catch(err => console.error(err));
-      }, [user.id]);
-      const totalWeight = goals.reduce((sum, g) => sum + Number(g.weightage || 0), 0);
-      function handleGoalChange(idx, field, value) {
-        setGoals(old => {
-          const newGoals = old.map((g, i) => i === idx ? { ...g, [field]: value } : g);
-          return newGoals;
-        });
-      }
-      function addGoal() {
-        setGoals([...goals, { thrust: '', title: '', unit: 'MAX', target: '', weightage: '' }]);
-      }
-      function removeGoal(idx) {
-        setGoals(goals.filter((_, i) => i !== idx));
-      }
-      function saveGoals() {
-        if (totalWeight !== 100) {
-          setMessage('Total weightage must equal 100%.');
-          return;
-        }
-        const payload = goals.map(g => ({ ...g, weightage: Number(g.weightage), target: g.unit === 'TIMELINE' ? g.target : Number(g.target) }));
-        fetch(`${API_URL}/goalsheets`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ employeeId: user.id, goals: payload })
-        })
-          .then(res => res.json())
-          .then(data => {
-            setSheet(data);
-            setMessage('Goals saved successfully');
-          })
-          .catch(err => console.error(err));
-      }
-      function submitGoals() {
-        if (!sheet) return;
-        fetch(`${API_URL}/goalsheets/submit`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ sheetId: sheet.id, employeeId: user.id })
-        })
-          .then(res => res.json())
-          .then(data => {
-            setSheet(data);
-            setMessage('Submitted for manager approval');
-          });
-      }
-      function recordCheckin() {
-        if (!sheet) return;
-        const achievements = goals.map(g => ({ goalId: g.id, actual: checkinData[g.id] }));
-        fetch(`${API_URL}/checkins`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ sheetId: sheet.id, employeeId: user.id, quarter, achievements, comment: '' })
-        })
-          .then(res => res.json())
-          .then(data => {
-            setSheet(data);
-            setMessage(`${quarter} check‑in recorded`);
-          });
-      }
-      if (loading) return <div className="p-6">Loading…</div>;
-      return (
-        <div className="p-6 max-w-5xl mx-auto">
-          <header className="flex justify-between items-center mb-4">
-            <h2 className="text-2xl font-bold">Welcome, {user.name}</h2>
-            <button onClick={onLogout} className="text-sm text-blue-600 underline">Logout</button>
-          </header>
-          {message && <div className="mb-4 p-2 bg-green-100 text-green-700 rounded">{message}</div>}
-          <h3 className="text-xl font-semibold mb-2">Goal Sheet</h3>
-          <p className="mb-2 text-gray-600 text-sm">Enter up to 8 goals.  Each goal must have a minimum weightage of 10%.  Total weightage must equal 100%.</p>
-          {goals.map((g, idx) => (
-            <div key={idx} className="border rounded p-4 mb-2 bg-white shadow-sm">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Thrust Area</label>
-                  <input type="text" value={g.thrust} onChange={e => handleGoalChange(idx, 'thrust', e.target.value)} className="mt-1 w-full border-gray-300 rounded" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Title</label>
-                  <input type="text" value={g.title} onChange={e => handleGoalChange(idx, 'title', e.target.value)} className="mt-1 w-full border-gray-300 rounded" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">UoM</label>
-                  <select value={g.unit} onChange={e => handleGoalChange(idx, 'unit', e.target.value)} className="mt-1 w-full border-gray-300 rounded">
-                    <option value="MAX">MAX</option>
-                    <option value="MIN">MIN</option>
-                    <option value="ZERO">ZERO</option>
-                    <option value="TIMELINE">TIMELINE</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Target {g.unit === 'TIMELINE' ? '(YYYY-MM-DD)' : ''}</label>
-                  <input type={g.unit === 'TIMELINE' ? 'date' : 'number'} value={g.target} onChange={e => handleGoalChange(idx, 'target', e.target.value)} className="mt-1 w-full border-gray-300 rounded" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Weightage (%)</label>
-                  <input type="number" value={g.weightage} onChange={e => handleGoalChange(idx, 'weightage', e.target.value)} className="mt-1 w-full border-gray-300 rounded" min="0" max="100" />
-                </div>
-              </div>
-              <button onClick={() => removeGoal(idx)} className="mt-2 text-xs text-red-500 underline">Remove</button>
-            </div>
-          ))}
-          {goals.length < 8 && <button onClick={addGoal} className="bg-gray-200 px-3 py-1 rounded text-sm">Add Goal</button>}
-          <div className="mt-4">
-            <div className="h-2 w-full bg-gray-200 rounded">
-              <div style={{ width: `${totalWeight}%` }} className={`h-full rounded ${totalWeight === 100 ? 'bg-green-500' : 'bg-red-500'}`}></div>
-            </div>
-            <p className="text-sm mt-1">Total Weightage: {totalWeight}%</p>
-          </div>
-          <div className="mt-4 flex gap-2">
-            <button onClick={saveGoals} className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Save Goals</button>
-            {sheet && (sheet.status === 'draft' || sheet.status === 'returned') && <button onClick={submitGoals} className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Submit to Manager</button>}
-          </div>
-          {sheet && sheet.status === 'approved' && (
-            <div className="mt-8">
-              <h3 className="text-xl font-semibold mb-2">Quarterly Check‑In</h3>
-              <div className="mb-2">
-                <label className="mr-2">Quarter:</label>
-                <select value={quarter} onChange={e => setQuarter(e.target.value)} className="border-gray-300 rounded">
-                  <option value="Q1">Q1</option>
-                  <option value="Q2">Q2</option>
-                  <option value="Q3">Q3</option>
-                  <option value="Q4">Q4</option>
-                </select>
-              </div>
-              {goals.map(g => (
-                <div key={g.id} className="mb-2">
-                  <label className="block text-sm font-medium text-gray-700">{g.title} actual:</label>
-                  <input type={g.unit === 'TIMELINE' ? 'date' : 'number'} onChange={e => setCheckinData({ ...checkinData, [g.id]: g.unit === 'TIMELINE' ? e.target.value : Number(e.target.value) })} className="mt-1 w-full border-gray-300 rounded" />
-                </div>
-              ))}
-              <button onClick={recordCheckin} className="mt-2 bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700">Record Check‑In</button>
-            </div>
-          )}
-          {sheet && sheet.quarterlyCheckins.length > 0 && (
-            <div className="mt-8">
-              <h3 className="text-xl font-semibold mb-2">Previous Check‑Ins</h3>
-              {sheet.quarterlyCheckins.map((qc, idx) => (
-                <div key={idx} className="mb-4 p-3 border rounded bg-white shadow-sm">
-                  <h4 className="font-semibold">{qc.quarter}</h4>
-                  <ul className="list-disc list-inside text-sm">
-                    {qc.achievements.map(a => {
-                      const goal = goals.find(g => g.id === a.goalId) || {};
-                      return <li key={a.goalId}>{goal.title}: {a.actual}</li>;
-                    })}
-                  </ul>
-                </div>
-              ))}
-            </div>
-          )}
+  <nav class="ns" id="nav-e">
+    <div class="nlbl">Main</div>
+    <div class="ni act" onclick="goTab('e-home')">◈ Dashboard</div>
+    <div class="ni" onclick="goTab('e-goals')">◎ My Goals</div>
+    <div class="ni" onclick="goTab('e-ci')">✓ Check-ins</div>
+    <div class="nlbl" style="margin-top:10px">Reports</div>
+    <div class="ni" onclick="goTab('e-ana')">↗ Analytics</div>
+  </nav>
+  <nav class="ns" id="nav-m" style="display:none">
+    <div class="nlbl">Main</div>
+    <div class="ni act" onclick="goTab('m-home')">◈ Dashboard</div>
+    <div class="ni" onclick="goTab('m-appr')">✓ Approvals <span class="nbadge">3</span></div>
+    <div class="ni" onclick="goTab('m-ci')">◉ Check-ins</div>
+    <div class="nlbl" style="margin-top:10px">Reports</div>
+    <div class="ni" onclick="goTab('m-ana')">↗ Team Analytics</div>
+  </nav>
+  <nav class="ns" id="nav-a" style="display:none">
+    <div class="nlbl">Admin</div>
+    <div class="ni act" onclick="goTab('a-home')">◈ Dashboard</div>
+    <div class="ni" onclick="goTab('a-cycles')">◷ Cycle Config</div>
+    <div class="ni" onclick="goTab('a-kpi')">⊕ Shared KPIs</div>
+    <div class="ni" onclick="goTab('a-audit')">◉ Audit Trail</div>
+    <div class="ni" onclick="goTab('a-esc')">⚠ Escalation <span class="nbadge">2</span></div>
+    <div class="nlbl" style="margin-top:10px">Reports</div>
+    <div class="ni" onclick="goTab('a-ana')">↗ Analytics</div>
+  </nav>
+
+  <div class="sb-bot">
+    <div class="ucard">
+      <div class="av ave" id="uav">PR</div>
+      <div><div class="uname" id="uname">Priya Rathore</div><div class="urole" id="urole">Employee · Engineering</div></div>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN CONTENT -->
+<main class="main">
+
+<!-- =================== EMPLOYEE HOME =================== -->
+<div class="view act" id="v-e-home">
+  <div class="topbar">
+    <div><div class="tb-t">Welcome back, Priya 👋</div><div class="tb-s">Goal Setting Period · May 2026 · 12 days remaining</div></div>
+    <div class="tb-acts">
+      <button class="btn btn-g">⬇ Export</button>
+      <button class="btn btn-p" onclick="goTab('e-goals')">+ Add Goals</button>
+    </div>
+  </div>
+  <div class="content">
+    <div class="cbanner">
+      <div><div class="ci">📅 Active Cycle: Goal Setting 2026</div><div class="cs">Submission deadline: May 31, 2026</div></div>
+      <div class="csteps">
+        <div class="cstep don">Goal Setting</div>
+        <div class="cstep cur">Q1 Jul</div>
+        <div class="cstep">Q2 Oct</div>
+        <div class="cstep">Q3 Jan</div>
+        <div class="cstep">Annual Mar</div>
+      </div>
+    </div>
+    <div class="metrics">
+      <div class="mc bl"><div class="ml">Goals Added</div><div class="mv">4</div><div class="ms">Max 8 allowed</div><div class="mi">◎</div></div>
+      <div class="mc am"><div class="ml">Weightage Used</div><div class="mv">75%</div><div class="ms">⚠ Add 25% more</div><div class="mi">⊡</div></div>
+      <div class="mc tl"><div class="ml">Check-ins Done</div><div class="mv">2/4</div><div class="ms">Q2 due in 8 days</div><div class="mi">✓</div></div>
+      <div class="mc gr"><div class="ml">Avg Progress</div><div class="mv">82%</div><div class="ms">On Track · +3% MoM</div><div class="mi">↗</div></div>
+    </div>
+    <div class="two-col">
+      <div>
+        <div class="sh">
+          <div><div class="st">My Goal Sheet</div><div class="ss">FY 2026 · Engineering Department</div></div>
+          <span class="sb2 bsub">Submitted</span>
         </div>
-      );
-    }
-    function ManagerDashboard({ user, onLogout }) {
-      const [sheets, setSheets] = React.useState([]);
-      const [selectedSheet, setSelectedSheet] = React.useState(null);
-      const [comment, setComment] = React.useState('');
-      const [action, setAction] = React.useState('approve');
-      const [message, setMessage] = React.useState('');
-      React.useEffect(() => {
-        fetch(`${API_URL}/goalsheets?managerId=${user.id}`)
-          .then(res => res.json())
-          .then(setSheets);
-      }, [user.id]);
-      function viewSheet(sheet) {
-        setSelectedSheet(JSON.parse(JSON.stringify(sheet)));
-        setMessage('');
-      }
-      function handleGoalEdit(idx, field, value) {
-        setSelectedSheet(old => {
-          const newGoals = old.goals.map((g, i) => i === idx ? { ...g, [field]: field === 'weightage' || field === 'target' ? Number(value) : value } : g);
-          return { ...old, goals: newGoals };
-        });
-      }
-      function saveChanges() {
-        if (!selectedSheet) return;
-        fetch(`${API_URL}/goalsheets`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ employeeId: selectedSheet.employeeId, goals: selectedSheet.goals })
-        })
-          .then(res => res.json())
-          .then(data => {
-            setMessage('Changes saved');
-            setSheets(sheets.map(gs => gs.id === data.id ? data : gs));
-          });
-      }
-      function submitDecision() {
-        if (!selectedSheet) return;
-        fetch(`${API_URL}/goalsheets/approve`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ sheetId: selectedSheet.id, managerId: user.id, action, comments: comment })
-        })
-          .then(res => res.json())
-          .then(data => {
-            setMessage(`Goal sheet ${action}d`);
-            setSheets(sheets.map(gs => gs.id === data.id ? data : gs));
-            setSelectedSheet(null);
-            setComment('');
-          });
-      }
-      return (
-        <div className="p-6 max-w-6xl mx-auto">
-          <header className="flex justify-between items-center mb-4">
-            <h2 className="text-2xl font-bold">Manager Dashboard ({user.name})</h2>
-            <button onClick={onLogout} className="text-sm text-blue-600 underline">Logout</button>
-          </header>
-          {message && <div className="mb-4 p-2 bg-green-100 text-green-700 rounded">{message}</div>}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="md:col-span-1">
-              <h3 className="font-semibold mb-2">Pending Goal Sheets</h3>
-              {sheets.filter(gs => gs.status === 'submitted').length === 0 && (
-                <p className="text-sm text-gray-500">No sheets awaiting your approval.</p>
-              )}
-              {sheets.filter(gs => gs.status === 'submitted').map(gs => {
-                return (
-                  <div key={gs.id} className="border rounded p-3 bg-white shadow-sm mb-2">
-                    <p className="font-semibold">Employee: {gs.employeeId}</p>
-                    <p>Status: {gs.status}</p>
-                    <button onClick={() => viewSheet(gs)} className="mt-1 text-xs text-blue-500 underline">Review</button>
-                  </div>
-                );
-              })}
-            </div>
-            {selectedSheet && (
-              <div className="md:col-span-2">
-                <h3 className="font-semibold mb-2">Review Sheet</h3>
-                {selectedSheet.goals.map((g, idx) => (
-                  <div key={idx} className="border rounded p-3 mb-2 bg-white shadow-sm">
-                    <p className="font-semibold mb-1">{g.title}</p>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
-                      <div>
-                        <label className="block font-medium">Target</label>
-                        <input type="number" value={g.target} onChange={e => handleGoalEdit(idx, 'target', e.target.value)} className="mt-1 w-full border-gray-300 rounded" />
-                      </div>
-                      <div>
-                        <label className="block font-medium">Weightage (%)</label>
-                        <input type="number" value={g.weightage} onChange={e => handleGoalEdit(idx, 'weightage', e.target.value)} className="mt-1 w-full border-gray-300 rounded" />
-                      </div>
-                    </div>
-                  </div>
-                ))}
-                <button onClick={saveChanges} className="mb-4 bg-gray-200 px-3 py-1 rounded">Save Changes</button>
-                <div className="mb-2">
-                  <label className="block text-sm font-medium">Manager Comment</label>
-                  <textarea value={comment} onChange={e => setComment(e.target.value)} className="w-full border-gray-300 rounded mt-1"></textarea>
-                </div>
-                <div className="flex gap-2 mb-4">
-                  <label className="flex items-center">
-                    <input type="radio" name="decision" value="approve" checked={action === 'approve'} onChange={() => setAction('approve')} className="mr-1" /> Approve
-                  </label>
-                  <label className="flex items-center">
-                    <input type="radio" name="decision" value="return" checked={action === 'return'} onChange={() => setAction('return')} className="mr-1" /> Return
-                  </label>
-                </div>
-                <button onClick={submitDecision} className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Submit Decision</button>
+        <div class="glist">
+          <div class="gc">
+            <div class="gc-h">
+              <div class="gnum">01</div>
+              <div class="gi">
+                <div class="gt">Innovation & Technology</div>
+                <div class="gtitle">Reduce API response time by 40%</div>
+                <div class="gdesc">Optimize backend queries, caching layer, reduce latency from 800ms → 480ms</div>
+                <div class="gmeta"><span class="tag tuom">MAX</span><span class="tag ttgt">Target: 40% ↓</span></div>
               </div>
-            )}
+              <div class="gw">30%</div>
+            </div>
+            <div class="sbar"><div class="sl"><span>Q1 Progress</span><span class="cg">87%</span></div><div class="strack"><div class="sfill sg" style="width:87%"></div></div></div>
           </div>
-        </div>
-      );
-    }
-    function AdminDashboard({ user, onLogout }) {
-      const [sharedGoal, setSharedGoal] = React.useState({ thrust: '', title: '', unit: 'MAX', target: '', weightage: '', employeeIds: [] });
-      const [allUsers, setAllUsers] = React.useState([]);
-      const [analytics, setAnalytics] = React.useState(null);
-      const [audit, setAudit] = React.useState([]);
-      const [message, setMessage] = React.useState('');
-      React.useEffect(() => {
-        fetch(`${API_URL}/users`).then(res => res.json()).then(setAllUsers);
-        fetch(`${API_URL}/analytics`).then(res => res.json()).then(setAnalytics);
-        fetch(`${API_URL}/audit`).then(res => res.json()).then(setAudit);
-      }, []);
-      function handleSharedChange(field, value) {
-        setSharedGoal(old => ({ ...old, [field]: value }));
-      }
-      function handleEmployeeCheckbox(id) {
-        setSharedGoal(old => {
-          const list = old.employeeIds.includes(id) ? old.employeeIds.filter(eid => eid !== id) : [...old.employeeIds, id];
-          return { ...old, employeeIds: list };
-        });
-      }
-      function createShared() {
-        if (!sharedGoal.thrust || !sharedGoal.title || !sharedGoal.unit || !sharedGoal.target || !sharedGoal.weightage || sharedGoal.employeeIds.length === 0) {
-          setMessage('Please fill all fields and select employees');
-          return;
-        }
-        const payload = { ...sharedGoal, target: sharedGoal.unit === 'TIMELINE' ? sharedGoal.target : Number(sharedGoal.target), weightage: Number(sharedGoal.weightage), adminId: user.id };
-        fetch(`${API_URL}/sharedGoals`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        }).then(res => res.json()).then(() => {
-          setMessage('Shared goal created');
-          setSharedGoal({ thrust: '', title: '', unit: 'MAX', target: '', weightage: '', employeeIds: [] });
-        });
-      }
-      React.useEffect(() => {
-        if (analytics) {
-          drawCharts(analytics);
-        }
-      }, [analytics]);
-      return (
-        <div className="p-6 max-w-7xl mx-auto">
-          <header className="flex justify-between items-center mb-4">
-            <h2 className="text-2xl font-bold">Admin Dashboard ({user.name})</h2>
-            <button onClick={onLogout} className="text-sm text-blue-600 underline">Logout</button>
-          </header>
-          {message && <div className="mb-4 p-2 bg-green-100 text-green-700 rounded">{message}</div>}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <h3 className="font-semibold mb-2">Create Shared Goal</h3>
-              <div className="bg-white p-4 rounded shadow">
-                <div className="mb-2">
-                  <label className="block text-sm font-medium">Thrust</label>
-                  <input type="text" value={sharedGoal.thrust} onChange={e => handleSharedChange('thrust', e.target.value)} className="w-full border-gray-300 rounded mt-1" />
-                </div>
-                <div className="mb-2">
-                  <label className="block text-sm font-medium">Title</label>
-                  <input type="text" value={sharedGoal.title} onChange={e => handleSharedChange('title', e.target.value)} className="w-full border-gray-300 rounded mt-1" />
-                </div>
-                <div className="mb-2">
-                  <label className="block text-sm font-medium">UoM</label>
-                  <select value={sharedGoal.unit} onChange={e => handleSharedChange('unit', e.target.value)} className="w-full border-gray-300 rounded mt-1">
-                    <option value="MAX">MAX</option>
-                    <option value="MIN">MIN</option>
-                    <option value="ZERO">ZERO</option>
-                    <option value="TIMELINE">TIMELINE</option>
-                  </select>
-                </div>
-                <div className="mb-2">
-                  <label className="block text-sm font-medium">Target {sharedGoal.unit === 'TIMELINE' ? '(YYYY-MM-DD)' : ''}</label>
-                  <input type={sharedGoal.unit === 'TIMELINE' ? 'date' : 'number'} value={sharedGoal.target} onChange={e => handleSharedChange('target', e.target.value)} className="w-full border-gray-300 rounded mt-1" />
-                </div>
-                <div className="mb-2">
-                  <label className="block text-sm font-medium">Weightage (%)</label>
-                  <input type="number" value={sharedGoal.weightage} onChange={e => handleSharedChange('weightage', e.target.value)} className="w-full border-gray-300 rounded mt-1" />
-                </div>
-                <div className="mb-2">
-                  <label className="block text-sm font-medium">Assign to Employees</label>
-                  <div className="grid grid-cols-2 gap-1 max-h-32 overflow-y-auto border p-2 rounded">
-                    {allUsers.filter(u => u.role === 'employee').map(u => (
-                      <label key={u.id} className="flex items-center text-sm">
-                        <input type="checkbox" checked={sharedGoal.employeeIds.includes(u.id)} onChange={() => handleEmployeeCheckbox(u.id)} className="mr-1" /> {u.name}
-                      </label>
-                    ))}
-                  </div>
-                </div>
-                <button onClick={createShared} className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Create Shared Goal</button>
+          <div class="gc">
+            <div class="gc-h">
+              <div class="gnum">02</div>
+              <div class="gi">
+                <div class="gt">Customer Excellence</div>
+                <div class="gtitle">Achieve CSAT score ≥ 4.5/5</div>
+                <div class="gdesc">Improve ticket resolution time, implement feedback loop with product team</div>
+                <div class="gmeta"><span class="tag tuom">MIN</span><span class="tag ttgt">Target: 4.5/5</span><span class="tag tshared">🔗 Shared KPI</span></div>
+                <div class="sindic">↗ Synced · Primary: Vikram Singh</div>
               </div>
+              <div class="gw">25%</div>
             </div>
-            <div>
-              <h3 className="font-semibold mb-2">Analytics</h3>
-              <div className="bg-white p-4 rounded shadow">
-                <canvas id="chart1" height="200"></canvas>
-                <canvas id="chart2" height="200" className="mt-4"></canvas>
-              </div>
-            </div>
+            <div class="sbar"><div class="sl"><span>Q1 Progress</span><span class="ca">64%</span></div><div class="strack"><div class="sfill sa" style="width:64%"></div></div></div>
           </div>
-          <div className="mt-8">
-            <h3 className="font-semibold mb-2">Audit Logs</h3>
-            <div className="bg-white p-4 rounded shadow max-h-60 overflow-y-auto text-sm">
-              {audit.length === 0 ? <p>No audit logs yet.</p> : audit.map(entry => (
-                <div key={entry.id} className="mb-2 border-b pb-1">
-                  <p><strong>{entry.timestamp}</strong> – {entry.message}</p>
-                  <p>Actor: {entry.actorId}</p>
-                  <p>Resource: {entry.resource}</p>
-                </div>
-              ))}
+          <div class="gc">
+            <div class="gc-h">
+              <div class="gnum">03</div>
+              <div class="gi">
+                <div class="gt">Operational Excellence</div>
+                <div class="gtitle">Zero critical production incidents in Q2</div>
+                <div class="gdesc">Monitoring alerts, on-call runbooks, automated rollbacks</div>
+                <div class="gmeta"><span class="tag tuom">ZERO</span><span class="tag ttgt">Target: 0 incidents</span></div>
+              </div>
+              <div class="gw">10%</div>
+            </div>
+            <div class="sbar"><div class="sl"><span>Q1 Progress</span><span class="cg">100%</span></div><div class="strack"><div class="sfill sg" style="width:100%"></div></div></div>
+          </div>
+          <div class="gc" style="border:1px dashed rgba(255,255,255,0.08)">
+            <div class="gc-h">
+              <div class="gnum" style="background:rgba(255,255,255,0.04);color:var(--t3)">04</div>
+              <div class="gi">
+                <div class="gt">People Development</div>
+                <div class="gtitle">Complete 3 learning certifications</div>
+                <div class="gdesc">AWS Architect, System Design, Internal Leadership Program</div>
+                <div class="gmeta"><span class="tag tuom">TIMELINE</span><span class="tag ttgt">Deadline: Dec 31</span></div>
+              </div>
+              <div class="gw" style="color:var(--amber)">10%</div>
             </div>
           </div>
         </div>
-      );
-    }
-    function drawCharts(analytics) {
-      if (window.chart1) window.chart1.destroy();
-      if (window.chart2) window.chart2.destroy();
-      const ctx1 = document.getElementById('chart1').getContext('2d');
-      const thrustLabels = Object.keys(analytics.goalDistribution);
-      const thrustData = Object.values(analytics.goalDistribution);
-      window.chart1 = new Chart(ctx1, {
-        type: 'pie',
-        data: {
-          labels: thrustLabels,
-          datasets: [{ data: thrustData }]
-        },
-        options: { plugins: { legend: { position: 'bottom' } }, title: { display: true, text: 'Goals by Thrust Area' } }
-      });
-      const ctx2 = document.getElementById('chart2').getContext('2d');
-      const uomLabels = Object.keys(analytics.uomDistribution);
-      const uomData = Object.values(analytics.uomDistribution);
-      window.chart2 = new Chart(ctx2, {
-        type: 'bar',
-        data: { labels: uomLabels, datasets: [{ label: 'Count', data: uomData }] },
-        options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } }, title: { display: true, text: 'UoM Distribution' } }
-      });
-    }
-    ReactDOM.render(<App />, document.getElementById('root'));
-  </script>
+      </div>
+      <div class="rp">
+        <div class="pcard">
+          <div class="pt">Goal Sheet Info</div>
+          <div class="ir"><span class="ik">Status</span><span class="sb2 bsub">Submitted</span></div>
+          <div class="ir"><span class="ik">Manager</span><span class="iv">Rahul Mehra</span></div>
+          <div class="ir"><span class="ik">Submitted</span><span class="iv">12 May 2026</span></div>
+          <div class="ir"><span class="ik">Total Goals</span><span class="iv">4 / 8</span></div>
+          <div class="ir"><span class="ik">Weightage</span><span class="iv" style="color:var(--amber)">75% ⚠</span></div>
+          <div class="ir"><span class="ik">Avg Score</span><span class="iv" style="color:var(--green)">82%</span></div>
+        </div>
+        <div class="pcard">
+          <div class="pt">Manager Feedback</div>
+          <div style="font-size:12px;color:var(--t2);line-height:1.6;padding:10px;background:rgba(255,255,255,0.03);border-radius:8px;border-left:2px solid var(--blue)">"Please add one more goal to complete 100% weightage before I approve. Consider a team mentorship goal."</div>
+          <div style="font-size:10px;color:var(--t3);margin-top:7px">— Rahul Mehra · 13 May 2026</div>
+        </div>
+        <div class="pcard">
+          <button class="btn btn-p" style="width:100%;justify-content:center;margin-bottom:7px" onclick="goTab('e-goals')">✎ Edit Goal Sheet</button>
+          <button class="btn btn-g" style="width:100%;justify-content:center">⬇ Download PDF</button>
+        </div>
+        <div class="pcard">
+          <div class="ai-badge" style="margin-bottom:10px">✦ AI Insight</div>
+          <div style="font-size:12px;color:var(--t2);line-height:1.6">Your CSAT goal is at risk. AI suggests: <span style="color:var(--blue)">set up weekly customer feedback sessions by May 20 to recover 18% progress.</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- =================== EMPLOYEE GOALS =================== -->
+<div class="view" id="v-e-goals">
+  <div class="topbar">
+    <div><div class="tb-t">My Goal Sheet</div><div class="tb-s">FY 2026 · Goal Setting Period · Draft mode</div></div>
+    <div class="tb-acts">
+      <button class="btn btn-g" onclick="toast('↓','Draft saved')">↓ Save Draft</button>
+      <button class="btn btn-p" id="sub-btn" onclick="submitGoals()" disabled>Submit to Manager →</button>
+    </div>
+  </div>
+  <div class="content">
+    <div class="wb-wrap">
+      <div class="wb-h"><div class="wb-lbl">Total Weightage</div><div class="wb-val ww" id="wbv">75%</div></div>
+      <div class="wb-track"><div class="wb-fill fw" id="wbf" style="width:75%"></div></div>
+      <div class="wb-msg mw" id="wbm">⚠ Your total weightage is 75%. Add 25% more to submit.</div>
+    </div>
+    <div class="glist" id="eg"></div>
+    <button class="add-btn" id="add-btn" onclick="addGoal()">+ Add Goal (4 of 8 used)</button>
+  </div>
+</div>
+
+<!-- =================== EMPLOYEE CHECK-INS =================== -->
+<div class="view" id="v-e-ci">
+  <div class="topbar">
+    <div><div class="tb-t">My Check-ins</div><div class="tb-s">Update your quarterly achievements</div></div>
+  </div>
+  <div class="content">
+    <div class="qtabs">
+      <button class="qt qd">✓ Q1 July</button>
+      <button class="qt qa">Q2 October</button>
+      <button class="qt">Q3 January</button>
+      <button class="qt">Annual March</button>
+    </div>
+    <div class="chcard">
+      <div class="chh"><div class="chg">01 · Reduce API response time by 40%</div><span class="sb2 bapp">On Track</span></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:12px">
+        <div><div style="font-size:10px;color:var(--t3);margin-bottom:3px;text-transform:uppercase;letter-spacing:0.4px">Planned Target</div><div style="font-size:20px;font-weight:800;font-family:var(--mono);color:var(--t)">40%</div></div>
+        <div><div style="font-size:10px;color:var(--t3);margin-bottom:3px;text-transform:uppercase;letter-spacing:0.4px">Actual Achievement</div><div style="font-size:20px;font-weight:800;font-family:var(--mono);color:var(--green)">34.8%</div></div>
+        <div><div style="font-size:10px;color:var(--t3);margin-bottom:3px;text-transform:uppercase;letter-spacing:0.4px">Progress Score</div><div style="font-size:20px;font-weight:800;font-family:var(--mono);color:var(--green)">87%</div></div>
+      </div>
+      <div class="strack" style="height:5px;margin-bottom:9px"><div class="sfill sg" style="width:87%"></div></div>
+      <div style="font-size:12px;color:var(--t2);background:rgba(82,196,26,.06);padding:9px;border-radius:7px;border-left:2px solid var(--green)">Manager: "Good progress. Cache implementation showing results. Push for final 6%."</div>
+    </div>
+    <div class="chcard">
+      <div class="chh"><div class="chg">02 · CSAT score ≥ 4.5/5</div><span class="sb2 bret">At Risk</span></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:12px">
+        <div><div style="font-size:10px;color:var(--t3);margin-bottom:3px;text-transform:uppercase;letter-spacing:0.4px">Planned Target</div><div style="font-size:20px;font-weight:800;font-family:var(--mono);color:var(--t)">4.5</div></div>
+        <div><div style="font-size:10px;color:var(--t3);margin-bottom:3px;text-transform:uppercase;letter-spacing:0.4px">Actual Achievement</div><div style="font-size:20px;font-weight:800;font-family:var(--mono);color:var(--amber)">2.9</div></div>
+        <div><div style="font-size:10px;color:var(--t3);margin-bottom:3px;text-transform:uppercase;letter-spacing:0.4px">Progress Score</div><div style="font-size:20px;font-weight:800;font-family:var(--mono);color:var(--amber)">64%</div></div>
+      </div>
+      <div class="strack" style="height:5px;margin-bottom:9px"><div class="sfill sa" style="width:64%"></div></div>
+      <div style="font-size:12px;color:var(--t2);background:rgba(255,169,64,.06);padding:9px;border-radius:7px;border-left:2px solid var(--amber)">Manager: "Need immediate action plan. Set up weekly customer feedback review by Monday."</div>
+    </div>
+  </div>
+</div>
+
+<!-- =================== EMPLOYEE ANALYTICS =================== -->
+<div class="view" id="v-e-ana">
+  <div class="topbar"><div><div class="tb-t">My Analytics</div><div class="tb-s">Personal performance summary · FY 2026</div></div></div>
+  <div class="content">
+    <div class="metrics">
+      <div class="mc gr"><div class="ml">Overall Score</div><div class="mv">82%</div><div class="ms">On Track</div></div>
+      <div class="mc bl"><div class="ml">Goals Completed</div><div class="mv">1/4</div><div class="ms">Q1 2026</div></div>
+      <div class="mc am"><div class="ml">At Risk Goals</div><div class="mv">1</div><div class="ms">Needs attention</div></div>
+      <div class="mc tl"><div class="ml">Check-ins Done</div><div class="mv">2/4</div><div class="ms">This year</div></div>
+    </div>
+    <div class="ccard" style="margin-bottom:14px"><div class="ctitle">Quarterly Progress Trend</div><div class="bar-chart" id="e-chart"></div></div>
+  </div>
+</div>
+
+<!-- =================== MANAGER HOME =================== -->
+<div class="view" id="v-m-home">
+  <div class="topbar">
+    <div><div class="tb-t">Manager Dashboard</div><div class="tb-s">Rahul Mehra · Engineering · 8 direct reports</div></div>
+    <div class="tb-acts"><button class="btn btn-g">⬇ Export Report</button></div>
+  </div>
+  <div class="content">
+    <div class="metrics">
+      <div class="mc am"><div class="ml">Pending Approvals</div><div class="mv">3</div><div class="ms">Action required now</div></div>
+      <div class="mc gr"><div class="ml">Approved</div><div class="mv">4</div><div class="ms">Goals locked</div></div>
+      <div class="mc bl"><div class="ml">Check-ins Done</div><div class="mv">6/8</div><div class="ms">This quarter</div></div>
+      <div class="mc rd"><div class="ml">Overdue</div><div class="mv">1</div><div class="ms">Escalated to HR</div></div>
+    </div>
+    <div class="sh"><div class="st">Team Goal Sheets</div><button class="btn btn-g" onclick="goTab('m-appr')">View All Approvals →</button></div>
+    <div class="tgrid">
+      <div class="tmcard tp" onclick="goTab('m-appr')">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px"><div class="av ave" style="width:34px;height:34px;font-size:11px">PR</div><span class="sb2 bsub">Pending</span></div>
+        <div class="tmname">Priya Rathore</div><div class="tmdept">Engineering · 4 goals</div>
+        <div class="mini-bar"><div class="mini-t" style="max-width:none;flex:1"><div class="mini-f ma" style="width:82%"></div></div><span class="mini-v ca">82%</span></div>
+      </div>
+      <div class="tmcard tp">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px"><div class="av ave" style="width:34px;height:34px;font-size:11px">AS</div><span class="sb2 bsub">Pending</span></div>
+        <div class="tmname">Aryan Sharma</div><div class="tmdept">Engineering · 6 goals</div>
+        <div class="mini-bar"><div class="mini-t" style="max-width:none;flex:1"><div class="mini-f mg" style="width:91%"></div></div><span class="mini-v cg">91%</span></div>
+      </div>
+      <div class="tmcard ta">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px"><div class="av avm" style="width:34px;height:34px;font-size:11px">NK</div><span class="sb2 blk">Locked</span></div>
+        <div class="tmname">Neha Kapoor</div><div class="tmdept">Engineering · 5 goals</div>
+        <div class="mini-bar"><div class="mini-t" style="max-width:none;flex:1"><div class="mini-f mg" style="width:95%"></div></div><span class="mini-v cg">95%</span></div>
+      </div>
+      <div class="tmcard to">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px"><div class="av" style="background:var(--red-d);color:var(--red);border:1px solid rgba(255,107,107,0.4);width:34px;height:34px;font-size:11px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700">KV</div><span class="sb2 bod">Overdue</span></div>
+        <div class="tmname">Karan Verma</div><div class="tmdept">Engineering · Not submitted</div>
+        <div style="font-size:11px;color:var(--red);margin-top:4px">12 days overdue · Escalated</div>
+      </div>
+      <div class="tmcard ta">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px"><div class="av avm" style="width:34px;height:34px;font-size:11px">SM</div><span class="sb2 blk">Locked</span></div>
+        <div class="tmname">Sneha Malik</div><div class="tmdept">Engineering · 7 goals</div>
+        <div class="mini-bar"><div class="mini-t" style="max-width:none;flex:1"><div class="mini-f mg" style="width:88%"></div></div><span class="mini-v cg">88%</span></div>
+      </div>
+      <div class="tmcard tp">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px"><div class="av ave" style="width:34px;height:34px;font-size:11px">RP</div><span class="sb2 bret">Returned</span></div>
+        <div class="tmname">Rohit Patel</div><div class="tmdept">Engineering · 3 goals</div>
+        <div style="font-size:11px;color:var(--red);margin-top:4px">Returned for rework</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- =================== MANAGER APPROVALS =================== -->
+<div class="view" id="v-m-appr">
+  <div class="topbar">
+    <div><div class="tb-t">Goal Approvals</div><div class="tb-s">3 pending · Review, edit inline, approve or return</div></div>
+  </div>
+  <div class="content">
+    <div class="two-col">
+      <div>
+        <div class="tcard">
+          <table>
+            <thead><tr><th>Employee</th><th>Goals</th><th>Weightage</th><th>Progress</th><th>Status</th><th>Action</th></tr></thead>
+            <tbody>
+              <tr>
+                <td><div class="tdname">Priya Rathore</div><div style="font-size:10px;color:var(--t3)">Submitted 12 May</div></td>
+                <td style="font-family:var(--mono)">4</td>
+                <td><span style="color:var(--amber);font-family:var(--mono);font-weight:700">75%</span></td>
+                <td><div class="mini-bar"><div class="mini-t"><div class="mini-f ma" style="width:82%"></div></div><span class="mini-v ca">82%</span></div></td>
+                <td><span class="sb2 bsub">Pending</span></td>
+                <td><div style="display:flex;gap:4px"><button class="btn btn-g" style="padding:5px 10px;font-size:11px" onclick="toast('↩','Returned for rework')">↩</button><button class="btn btn-p" style="padding:5px 10px;font-size:11px" onclick="toast('🔒','Approved & locked!')">✓ Approve</button></div></td>
+              </tr>
+              <tr>
+                <td><div class="tdname">Aryan Sharma</div><div style="font-size:10px;color:var(--t3)">Submitted 10 May</div></td>
+                <td style="font-family:var(--mono)">6</td>
+                <td><span style="color:var(--green);font-family:var(--mono);font-weight:700">100%</span></td>
+                <td><div class="mini-bar"><div class="mini-t"><div class="mini-f mg" style="width:91%"></div></div><span class="mini-v cg">91%</span></div></td>
+                <td><span class="sb2 bsub">Pending</span></td>
+                <td><div style="display:flex;gap:4px"><button class="btn btn-g" style="padding:5px 10px;font-size:11px" onclick="toast('↩','Returned for rework')">↩</button><button class="btn btn-p" style="padding:5px 10px;font-size:11px" onclick="toast('🔒','Approved & locked!')">✓ Approve</button></div></td>
+              </tr>
+              <tr>
+                <td><div class="tdname">Rohit Patel</div><div style="font-size:10px;color:var(--t3)">Returned 11 May</div></td>
+                <td style="font-family:var(--mono)">3</td>
+                <td><span style="color:var(--red);font-family:var(--mono);font-weight:700">55%</span></td>
+                <td><div class="mini-bar"><div class="mini-t"><div class="mini-f mr" style="width:45%"></div></div><span class="mini-v cr">45%</span></div></td>
+                <td><span class="sb2 bret">Returned</span></td>
+                <td><div style="display:flex;gap:4px"><button class="btn btn-g" style="padding:5px 10px;font-size:11px;opacity:.4" disabled>↩</button><button class="btn btn-p" style="padding:5px 10px;font-size:11px;opacity:.4" disabled>✓</button></div></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="rp">
+        <div class="pcard">
+          <div class="pt">Approval Rules</div>
+          <div class="ir"><span class="ik">Min total weightage</span><span class="iv">100%</span></div>
+          <div class="ir"><span class="ik">Min per goal</span><span class="iv">10%</span></div>
+          <div class="ir"><span class="ik">Max goals</span><span class="iv">8</span></div>
+          <div class="ir"><span class="ik">Approval SLA</span><span class="iv" style="color:var(--amber)">3 days</span></div>
+        </div>
+        <div class="pcard">
+          <div class="pt">Add Comment</div>
+          <textarea style="width:100%;background:rgba(255,255,255,0.03);border:1px solid var(--b);border-radius:8px;padding:10px;color:var(--t);font-size:12px;font-family:var(--font);height:88px" placeholder="Add a comment for the employee..."></textarea>
+          <button class="btn btn-g" style="width:100%;justify-content:center;margin-top:7px" onclick="toast('✓','Comment sent')">Send Comment</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- =================== MANAGER CHECK-INS =================== -->
+<div class="view" id="v-m-ci">
+  <div class="topbar"><div><div class="tb-t">Team Check-ins</div><div class="tb-s">Manager review of quarterly achievements</div></div></div>
+  <div class="content">
+    <div class="tcard">
+      <table>
+        <thead><tr><th>Employee</th><th>Goal</th><th>Target</th><th>Actual</th><th>Score</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td class="tdname">Priya Rathore</td><td style="font-size:12px">Reduce API response time</td><td style="font-family:var(--mono)">40%</td><td style="font-family:var(--mono);color:var(--green)">34.8%</td><td><div class="mini-bar"><div class="mini-t" style="max-width:60px"><div class="mini-f mg" style="width:87%"></div></div><span class="mini-v cg">87%</span></div></td><td><span class="sb2 bapp">On Track</span></td></tr>
+          <tr><td class="tdname">Priya Rathore</td><td style="font-size:12px">CSAT score ≥ 4.5</td><td style="font-family:var(--mono)">4.5</td><td style="font-family:var(--mono);color:var(--amber)">2.9</td><td><div class="mini-bar"><div class="mini-t" style="max-width:60px"><div class="mini-f ma" style="width:64%"></div></div><span class="mini-v ca">64%</span></div></td><td><span class="sb2 bret">At Risk</span></td></tr>
+          <tr><td class="tdname">Aryan Sharma</td><td style="font-size:12px">Launch mobile app v2</td><td style="font-family:var(--mono)">1 launch</td><td style="font-family:var(--mono);color:var(--green)">✓ Done</td><td><div class="mini-bar"><div class="mini-t" style="max-width:60px"><div class="mini-f mg" style="width:100%"></div></div><span class="mini-v cg">100%</span></div></td><td><span class="sb2 bapp">Completed</span></td></tr>
+          <tr><td class="tdname">Neha Kapoor</td><td style="font-size:12px">Reduce bug backlog 60%</td><td style="font-family:var(--mono)">60%</td><td style="font-family:var(--mono);color:var(--green)">57%</td><td><div class="mini-bar"><div class="mini-t" style="max-width:60px"><div class="mini-f mg" style="width:95%"></div></div><span class="mini-v cg">95%</span></div></td><td><span class="sb2 bapp">On Track</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- =================== MANAGER ANALYTICS =================== -->
+<div class="view" id="v-m-ana">
+  <div class="topbar"><div><div class="tb-t">Team Analytics</div></div></div>
+  <div class="content">
+    <div class="metrics">
+      <div class="mc gr"><div class="ml">Team Avg Score</div><div class="mv">84%</div><div class="ms">Above target</div></div>
+      <div class="mc bl"><div class="ml">Approval Rate</div><div class="mv">67%</div><div class="ms">5/8 approved</div></div>
+      <div class="mc am"><div class="ml">At Risk</div><div class="mv">2</div><div class="ms">Needs coaching</div></div>
+      <div class="mc rd"><div class="ml">Overdue</div><div class="mv">1</div><div class="ms">Escalated</div></div>
+    </div>
+    <div class="ccard"><div class="ctitle">Team Member Progress Scores</div><div class="bar-chart" id="m-chart"></div></div>
+  </div>
+</div>
+
+<!-- =================== ADMIN HOME =================== -->
+<div class="view" id="v-a-home">
+  <div class="topbar">
+    <div><div class="tb-t">Admin Dashboard</div><div class="tb-s">Meena Joshi · HR Admin · All departments</div></div>
+    <div class="tb-acts"><button class="btn btn-g">⬇ Export CSV</button><button class="btn btn-p" onclick="goTab('a-kpi')">+ Push Shared KPI</button></div>
+  </div>
+  <div class="content">
+    <div class="metrics">
+      <div class="mc bl"><div class="ml">Total Employees</div><div class="mv">124</div><div class="ms">6 departments</div></div>
+      <div class="mc gr"><div class="ml">Goals Approved</div><div class="mv">87</div><div class="ms">70.2% completion</div></div>
+      <div class="mc am"><div class="ml">Pending Approvals</div><div class="mv">23</div><div class="ms">8 managers</div></div>
+      <div class="mc rd"><div class="ml">Overdue Submissions</div><div class="mv">14</div><div class="ms">Escalation active</div></div>
+    </div>
+    <div class="cgrid">
+      <div class="ccard"><div class="ctitle">Department Completion Rate</div><div class="bar-chart" id="a-chart"></div></div>
+      <div class="ccard"><div class="ctitle">Goal Status Distribution</div>
+        <div class="donut-wrap">
+          <svg width="100" height="100" viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="38" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="14"/>
+            <circle cx="50" cy="50" r="38" fill="none" stroke="#52C41A" stroke-width="14" stroke-dasharray="143 96" stroke-dashoffset="24" stroke-linecap="round"/>
+            <circle cx="50" cy="50" r="38" fill="none" stroke="#5B8FF9" stroke-width="14" stroke-dasharray="57 182" stroke-dashoffset="-119" stroke-linecap="round"/>
+            <circle cx="50" cy="50" r="38" fill="none" stroke="#FFA940" stroke-width="14" stroke-dasharray="29 210" stroke-dashoffset="-176" stroke-linecap="round"/>
+            <circle cx="50" cy="50" r="38" fill="none" stroke="#FF6B6B" stroke-width="14" stroke-dasharray="10 229" stroke-dashoffset="-205" stroke-linecap="round"/>
+            <text x="50" y="46" text-anchor="middle" fill="#E2E8F8" font-size="14" font-weight="800" font-family="DM Mono">87</text>
+            <text x="50" y="60" text-anchor="middle" fill="#454D60" font-size="9" font-family="DM Mono">approved</text>
+          </svg>
+          <div class="dleg">
+            <div class="dli"><div class="dd" style="background:var(--green)"></div>Approved (70%)</div>
+            <div class="dli"><div class="dd" style="background:var(--blue)"></div>Submitted (23%)</div>
+            <div class="dli"><div class="dd" style="background:var(--amber)"></div>Draft (12%)</div>
+            <div class="dli"><div class="dd" style="background:var(--red)"></div>Overdue (5%)</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="pcard">
+        <div class="pt">Recent Escalations</div>
+        <div class="erow"><div class="elvl el2">L2</div><div style="flex:1"><div style="font-size:13px;font-weight:700;color:var(--t)">Karan Verma</div><div style="font-size:10px;color:var(--t3)">Goals not submitted · 12 days overdue</div></div><span class="sb2 bret">Sent to HR</span></div>
+        <div class="erow"><div class="elvl el1">L1</div><div style="flex:1"><div style="font-size:13px;font-weight:700;color:var(--t)">Rohit Patel</div><div style="font-size:10px;color:var(--t3)">Q1 check-in pending · 6 days</div></div><span class="sb2 bsub">Notified</span></div>
+      </div>
+      <div class="pcard">
+        <div class="pt">Recent Audit Events</div>
+        <div class="alist">
+          <div class="aitem"><div class="adotcol"><div class="adot" style="background:var(--blue)"></div><div class="aline"></div></div><div><div class="atxt"><strong>Rahul Mehra</strong> approved goal sheet of Neha Kapoor. Goals locked.</div><div class="atime">Today · 09:14</div></div></div>
+          <div class="aitem"><div class="adotcol"><div class="adot" style="background:var(--amber)"></div><div class="aline"></div></div><div><div class="atxt"><strong>Rahul Mehra</strong> changed target of Goal 01 from 35% → 40% for Priya Rathore.</div><div class="atime">Yesterday · 16:32</div></div></div>
+          <div class="aitem"><div class="adotcol"><div class="adot" style="background:var(--green)"></div></div><div><div class="atxt"><strong>Meena Joshi</strong> pushed shared KPI to 14 employees in Ops.</div><div class="atime">14 May · 11:05</div></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- =================== ADMIN CYCLES =================== -->
+<div class="view" id="v-a-cycles">
+  <div class="topbar"><div><div class="tb-t">Cycle Configuration</div><div class="tb-s">Manage goal setting and check-in windows</div></div><div class="tb-acts"><button class="btn btn-p" onclick="toast('✓','New cycle created')">+ New Cycle</button></div></div>
+  <div class="content">
+    <div class="tcard">
+      <table>
+        <thead><tr><th>Cycle Name</th><th>Type</th><th>Start Date</th><th>End Date</th><th>Status</th><th>Action</th></tr></thead>
+        <tbody>
+          <tr><td class="tdname">Goal Setting 2026</td><td style="font-size:11px">Annual Setup</td><td style="font-family:var(--mono);font-size:11px">01 May 2026</td><td style="font-family:var(--mono);font-size:11px">31 May 2026</td><td><span class="sb2 bsub">Active</span></td><td><button class="btn btn-g" style="padding:5px 12px;font-size:11px">Edit</button></td></tr>
+          <tr><td class="tdname">Q1 Check-in 2026</td><td style="font-size:11px">Quarterly</td><td style="font-family:var(--mono);font-size:11px">01 Jul 2026</td><td style="font-family:var(--mono);font-size:11px">31 Jul 2026</td><td><span class="sb2 bdraft">Upcoming</span></td><td><button class="btn btn-g" style="padding:5px 12px;font-size:11px">Edit</button></td></tr>
+          <tr><td class="tdname">Q2 Check-in 2026</td><td style="font-size:11px">Quarterly</td><td style="font-family:var(--mono);font-size:11px">01 Oct 2026</td><td style="font-family:var(--mono);font-size:11px">31 Oct 2026</td><td><span class="sb2 bdraft">Upcoming</span></td><td><button class="btn btn-g" style="padding:5px 12px;font-size:11px">Edit</button></td></tr>
+          <tr><td class="tdname">Q3 Check-in 2026</td><td style="font-size:11px">Quarterly</td><td style="font-family:var(--mono);font-size:11px">01 Jan 2027</td><td style="font-family:var(--mono);font-size:11px">31 Jan 2027</td><td><span class="sb2 bdraft">Upcoming</span></td><td><button class="btn btn-g" style="padding:5px 12px;font-size:11px">Edit</button></td></tr>
+          <tr><td class="tdname">Annual Review 2026</td><td style="font-size:11px">Annual Review</td><td style="font-family:var(--mono);font-size:11px">01 Mar 2027</td><td style="font-family:var(--mono);font-size:11px">15 Apr 2027</td><td><span class="sb2 bdraft">Upcoming</span></td><td><button class="btn btn-g" style="padding:5px 12px;font-size:11px">Edit</button></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- =================== ADMIN SHARED KPI =================== -->
+<div class="view" id="v-a-kpi">
+  <div class="topbar"><div><div class="tb-t">Shared KPIs</div><div class="tb-s">Push department-wide goals to employees</div></div><div class="tb-acts"><button class="btn btn-p" onclick="toast('✓','Shared KPI pushed to selected employees!')">+ Push New KPI</button></div></div>
+  <div class="content">
+    <div class="tcard">
+      <table>
+        <thead><tr><th>KPI Title</th><th>Thrust Area</th><th>Target</th><th>UoM</th><th>Assigned To</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td class="tdname">Reduce complaint TAT</td><td style="font-size:11px">Operational Excellence</td><td style="font-family:var(--mono);font-size:11px">&lt; 48 hours</td><td><span class="tag tuom">MIN</span></td><td style="font-family:var(--mono);font-size:11px;color:var(--teal)">14 employees</td><td><span class="sb2 bapp">Active</span></td></tr>
+          <tr><td class="tdname">NPS Score Improvement</td><td style="font-size:11px">Customer Excellence</td><td style="font-family:var(--mono);font-size:11px">&gt; 60</td><td><span class="tag tuom">MAX</span></td><td style="font-family:var(--mono);font-size:11px;color:var(--teal)">8 employees</td><td><span class="sb2 bapp">Active</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- =================== ADMIN AUDIT =================== -->
+<div class="view" id="v-a-audit">
+  <div class="topbar"><div><div class="tb-t">Audit Trail</div><div class="tb-s">Complete immutable change log · All departments · FY 2026</div></div><div class="tb-acts"><button class="btn btn-g">⬇ Export Log</button></div></div>
+  <div class="content">
+    <div class="tcard">
+      <table>
+        <thead><tr><th>Timestamp</th><th>Actor</th><th>Action</th><th>Entity</th><th>Old Value</th><th>New Value</th></tr></thead>
+        <tbody>
+          <tr><td style="font-family:var(--mono);font-size:11px;color:var(--t3)">Today 09:14</td><td><div class="tdname">Rahul Mehra</div><div style="font-size:10px;color:var(--t3)">Manager</div></td><td><span class="sb2 bapp">APPROVED</span></td><td style="font-size:11px">Neha Kapoor · Goal Sheet</td><td style="font-family:var(--mono);font-size:11px;color:var(--t3)">SUBMITTED</td><td><span class="sb2 blk">LOCKED</span></td></tr>
+          <tr><td style="font-family:var(--mono);font-size:11px;color:var(--t3)">Yesterday 16:32</td><td><div class="tdname">Rahul Mehra</div><div style="font-size:10px;color:var(--t3)">Manager</div></td><td><span class="sb2 bsub">EDITED</span></td><td style="font-size:11px">Priya Rathore · Goal 01 · Target</td><td style="font-family:var(--mono);font-size:11px;color:var(--red)">35%</td><td style="font-family:var(--mono);font-size:11px;color:var(--green)">40%</td></tr>
+          <tr><td style="font-family:var(--mono);font-size:11px;color:var(--t3)">14 May 11:05</td><td><div class="tdname">Meena Joshi</div><div style="font-size:10px;color:var(--t3)">Admin</div></td><td><span class="sb2" style="background:var(--teal-d);color:var(--teal)">KPI PUSH</span></td><td style="font-size:11px">Shared KPI → 14 employees</td><td style="font-family:var(--mono);font-size:11px;color:var(--t3)">—</td><td style="font-size:11px;color:var(--teal)">Complaint TAT &lt; 48h</td></tr>
+          <tr><td style="font-family:var(--mono);font-size:11px;color:var(--t3)">12 May 09:22</td><td><div class="tdname">Priya Rathore</div><div style="font-size:10px;color:var(--t3)">Employee</div></td><td><span class="sb2 bsub">SUBMITTED</span></td><td style="font-size:11px">Goal Sheet FY 2026</td><td style="font-family:var(--mono);font-size:11px;color:var(--t3)">DRAFT</td><td><span class="sb2 bsub">SUBMITTED</span></td></tr>
+          <tr><td style="font-family:var(--mono);font-size:11px;color:var(--t3)">10 May 14:15</td><td><div class="tdname">Rahul Mehra</div><div style="font-size:10px;color:var(--t3)">Manager</div></td><td><span class="sb2 bret">RETURNED</span></td><td style="font-size:11px">Rohit Patel · Goal Sheet</td><td><span class="sb2 bsub">SUBMITTED</span></td><td><span class="sb2 bret">RETURNED</span></td></tr>
+          <tr><td style="font-family:var(--mono);font-size:11px;color:var(--t3)">08 May 16:00</td><td><div class="tdname">Meena Joshi</div><div style="font-size:10px;color:var(--t3)">Admin</div></td><td><span class="sb2 bdraft">UNLOCKED</span></td><td style="font-size:11px">Sneha Malik · Goal 03 · Target</td><td><span class="sb2 blk">LOCKED</span></td><td><span class="sb2 bdraft">EDITING</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- =================== ADMIN ESCALATION =================== -->
+<div class="view" id="v-a-esc">
+  <div class="topbar"><div><div class="tb-t">Escalation Engine</div><div class="tb-s">Automated rule-based notification log</div></div><div class="tb-acts"><button class="btn btn-g">⚙ Configure Rules</button></div></div>
+  <div class="content">
+    <div class="two-col">
+      <div>
+        <div class="tcard">
+          <table>
+            <thead><tr><th>Employee</th><th>Issue</th><th>Level</th><th>Sent To</th><th>Status</th><th>Date</th></tr></thead>
+            <tbody>
+              <tr><td class="tdname">Karan Verma</td><td style="font-size:11px;color:var(--t3)">Goals not submitted</td><td><span class="elvl el2">L2 — Mgr</span></td><td style="font-size:11px">Rahul Mehra</td><td><span class="sb2 bsub">Sent</span></td><td style="font-family:var(--mono);font-size:11px;color:var(--t3)">10 May</td></tr>
+              <tr><td class="tdname">Karan Verma</td><td style="font-size:11px;color:var(--t3)">Goals not submitted</td><td><span class="elvl el3">L3 — HR</span></td><td style="font-size:11px">Meena Joshi</td><td><span class="sb2 bsub">Sent</span></td><td style="font-family:var(--mono);font-size:11px;color:var(--t3)">13 May</td></tr>
+              <tr><td class="tdname">Rohit Patel</td><td style="font-size:11px;color:var(--t3)">Q1 check-in pending</td><td><span class="elvl el1">L1 — Emp</span></td><td style="font-size:11px">Rohit Patel</td><td><span class="sb2 bapp">Resolved</span></td><td style="font-family:var(--mono);font-size:11px;color:var(--t3)">08 May</td></tr>
+              <tr><td class="tdname">Anjali Soni</td><td style="font-size:11px;color:var(--t3)">Manager approval >3 days</td><td><span class="elvl el1">L1 — Mgr</span></td><td style="font-size:11px">Pooja Agarwal</td><td><span class="sb2 bsub">Sent</span></td><td style="font-family:var(--mono);font-size:11px;color:var(--t3)">15 May</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="rp">
+        <div class="pcard">
+          <div class="pt">Escalation Rules</div>
+          <div class="ir"><span class="ik">L1 — 5 days</span><span class="iv" style="color:var(--blue)">Notify Employee</span></div>
+          <div class="ir"><span class="ik">L2 — 7 days</span><span class="iv" style="color:var(--amber)">Notify Manager</span></div>
+          <div class="ir"><span class="ik">L3 — 10 days</span><span class="iv" style="color:var(--red)">Notify HR/Admin</span></div>
+          <div class="ir"><span class="ik">Approval SLA</span><span class="iv" style="color:var(--amber)">3-day trigger</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- =================== ADMIN ANALYTICS =================== -->
+<div class="view" id="v-a-ana">
+  <div class="topbar"><div><div class="tb-t">Organization Analytics</div><div class="tb-s">All departments · FY 2026</div></div><div class="tb-acts"><button class="btn btn-g">⬇ Export Excel</button></div></div>
+  <div class="content">
+    <div class="metrics">
+      <div class="mc gr"><div class="ml">Org Completion Rate</div><div class="mv">70%</div><div class="ms">87/124 employees</div></div>
+      <div class="mc bl"><div class="ml">Avg Progress Score</div><div class="mv">79%</div><div class="ms">All departments</div></div>
+      <div class="mc pu"><div class="ml">Shared KPIs Active</div><div class="mv">2</div><div class="ms">22 employees</div></div>
+      <div class="mc am"><div class="ml">Check-in Rate</div><div class="mv">68%</div><div class="ms">Q1 2026</div></div>
+    </div>
+    <div class="cgrid">
+      <div class="ccard"><div class="ctitle">Department Completion Heatmap</div><div class="bar-chart" id="a2-chart"></div></div>
+      <div class="ccard">
+        <div class="ctitle">Manager Effectiveness Leaderboard</div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div class="ldrow"><div class="ldnum" style="background:var(--amber-d);color:var(--amber)">1</div><div style="flex:1"><div style="font-size:13px;font-weight:700;color:var(--t);margin-bottom:4px">Ananya Mishra</div><div class="mini-bar"><div class="mini-t" style="max-width:none;flex:1"><div class="mini-f mg" style="width:95%"></div></div><span class="mini-v cg">95%</span></div></div></div>
+          <div class="ldrow"><div class="ldnum" style="background:rgba(255,255,255,0.05);color:var(--t3)">2</div><div style="flex:1"><div style="font-size:13px;font-weight:700;color:var(--t);margin-bottom:4px">Rahul Mehra</div><div class="mini-bar"><div class="mini-t" style="max-width:none;flex:1"><div class="mini-f mg" style="width:84%"></div></div><span class="mini-v cg">84%</span></div></div></div>
+          <div class="ldrow"><div class="ldnum" style="background:rgba(255,255,255,0.05);color:var(--t3)">3</div><div style="flex:1"><div style="font-size:13px;font-weight:700;color:var(--t);margin-bottom:4px">Suresh Kumar</div><div class="mini-bar"><div class="mini-t" style="max-width:none;flex:1"><div class="mini-f ma" style="width:72%"></div></div><span class="mini-v ca">72%</span></div></div></div>
+          <div class="ldrow"><div class="ldnum" style="background:rgba(255,255,255,0.05);color:var(--t3)">4</div><div style="flex:1"><div style="font-size:13px;font-weight:700;color:var(--t);margin-bottom:4px">Pooja Agarwal</div><div class="mini-bar"><div class="mini-t" style="max-width:none;flex:1"><div class="mini-f mr" style="width:58%"></div></div><span class="mini-v cr">58%</span></div></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</main>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toastEl"><span class="toast-icon" id="toastIcon">✓</span><span id="toastMsg">Done</span></div>
+
+<script>
+let goals=[
+  {id:1,thrust:'Innovation & Technology',title:'Reduce API response time by 40%',uom:'MAX',target:'40% ↓',w:30,shared:false,score:87},
+  {id:2,thrust:'Customer Excellence',title:'Achieve CSAT score ≥ 4.5/5',uom:'MIN',target:'4.5/5',w:25,shared:true,score:64},
+  {id:3,thrust:'Operational Excellence',title:'Zero critical production incidents',uom:'ZERO',target:'0 incidents',w:10,shared:false,score:100},
+  {id:4,thrust:'People Development',title:'Complete 3 learning certifications',uom:'TIMELINE',target:'Dec 31',w:10,shared:false,score:null}
+];
+let nid=5;
+
+const roles={
+  e:{nav:'nav-e',tab:'e-home',avcls:'ave',pillcls:'re',init:'PR',name:'Priya Rathore',role:'Employee · Engineering'},
+  m:{nav:'nav-m',tab:'m-home',avcls:'avm',pillcls:'rm',init:'RM',name:'Rahul Mehra',role:'Manager · Engineering'},
+  a:{nav:'nav-a',tab:'a-home',avcls:'ava',pillcls:'ra',init:'MJ',name:'Meena Joshi',role:'Admin · HR'}
+};
+
+function switchRole(r){
+  ['nav-e','nav-m','nav-a'].forEach(n=>document.getElementById(n).style.display='none');
+  document.getElementById(roles[r].nav).style.display='block';
+  document.querySelectorAll('.rpill').forEach(p=>{p.className='rpill'});
+  const btns=document.querySelectorAll('.rpill');
+  const idx=r==='e'?0:r==='m'?1:2;
+  btns[idx].className='rpill '+roles[r].pillcls;
+  const av=document.getElementById('uav');
+  av.className='av '+roles[r].avcls;
+  av.textContent=roles[r].init;
+  document.getElementById('uname').textContent=roles[r].name;
+  document.getElementById('urole').textContent=roles[r].role;
+  goTab(roles[r].tab);
+  toast('✓','Switched to '+roles[r].name);
+}
+
+function goTab(t){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('act'));
+  const el=document.getElementById('v-'+t);
+  if(el) el.classList.add('act');
+  document.querySelectorAll('.ni').forEach(n=>n.classList.remove('act'));
+  if(t==='e-goals') renderGoals();
+  renderCharts(t);
+}
+
+function getTotal(){return goals.reduce((s,g)=>s+g.w,0)}
+
+function updateWB(){
+  const tot=getTotal();
+  const fill=document.getElementById('wbf');
+  const val=document.getElementById('wbv');
+  const msg=document.getElementById('wbm');
+  const btn=document.getElementById('sub-btn');
+  const pct=Math.min(tot,108);
+  if(!fill) return;
+  fill.style.width=pct+'%';
+  val.textContent=tot+'%';
+  if(tot===100){
+    fill.className='wb-fill fok';val.className='wb-val wok';msg.className='wb-msg mok';
+    msg.textContent='✓ Perfect! Weightage is exactly 100%. Ready to submit.';btn.disabled=false;
+  } else if(tot>100){
+    fill.className='wb-fill fo';val.className='wb-val wo';msg.className='wb-msg mo';
+    msg.textContent='⛔ Total is '+tot+'%. Remove '+(tot-100)+'% to submit.';btn.disabled=true;
+  } else {
+    fill.className='wb-fill fw';val.className='wb-val ww';msg.className='wb-msg mw';
+    msg.textContent='⚠ Your total is '+tot+'%. Add '+(100-tot)+'% more to submit.';btn.disabled=true;
+  }
+  const ab=document.getElementById('add-btn');
+  if(ab) ab.textContent='+ Add Goal ('+goals.length+' of 8 used)';
+}
+
+function renderGoals(){
+  const c=document.getElementById('eg');
+  if(!c) return;
+  c.innerHTML=goals.map((g,i)=>{
+    const sc=g.score!==null?(g.score>=90?'sg':g.score>=60?'sa':'sr'):null;
+    const cv=g.score!==null?(g.score>=90?'cg':g.score>=60?'ca':'cr'):null;
+    return `<div class="gc">
+      <div class="gc-h">
+        <div class="gnum">0${i+1}</div>
+        <div class="gi">
+          <div class="gt">${g.thrust}</div>
+          <div class="gtitle">${g.title}</div>
+          <div class="gmeta">
+            <span class="tag tuom">${g.uom}</span>
+            <span class="tag ttgt">Target: ${g.target}</span>
+            ${g.shared?'<span class="tag tshared">🔗 Shared KPI</span>':''}
+          </div>
+          ${g.shared?'<div class="sindic">↗ Synced · Read-only target</div>':''}
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
+          <div style="display:flex;align-items:center;gap:5px">
+            <button class="ibtn" onclick="chw(${g.id},-10)" ${g.shared?'style="opacity:.4"':''}>−</button>
+            <div class="gw" style="min-width:46px;text-align:center">${g.w}%</div>
+            <button class="ibtn" onclick="chw(${g.id},10)">+</button>
+          </div>
+          ${!g.shared?`<button class="ibtn" onclick="remg(${g.id})" style="color:var(--red);border-color:rgba(255,107,107,0.3);font-size:12px">✕</button>`:'<div style="font-size:9px;color:var(--t3);text-align:right">Weight only</div>'}
+        </div>
+      </div>
+      ${g.score!==null?`<div class="sbar"><div class="sl"><span>Q1 Progress</span><span class="${cv}">${g.score}%</span></div><div class="strack"><div class="sfill ${sc}" style="width:${g.score}%"></div></div></div>`:''}
+    </div>`;
+  }).join('');
+  updateWB();
+}
+
+function chw(id,d){
+  const g=goals.find(x=>x.id===id);
+  if(!g||g.shared) return;
+  const nw=g.w+d;
+  if(nw<10){toast('⚠','Min weightage is 10%');return}
+  if(nw>100){toast('⚠','Max 100% per goal');return}
+  g.w=nw;renderGoals();
+}
+
+function remg(id){
+  goals=goals.filter(g=>g.id!==id);
+  renderGoals();toast('✓','Goal removed');
+}
+
+function addGoal(){
+  if(goals.length>=8){toast('⚠','Max 8 goals allowed');return}
+  goals.push({id:nid++,thrust:'New Area',title:'Enter your goal title',uom:'MAX',target:'Set target',w:10,shared:false,score:null});
+  renderGoals();toast('✓','Goal added — update the details');
+}
+
+function submitGoals(){
+  if(getTotal()!==100) return;
+  toast('✓','Goal sheet submitted to Rahul Mehra!');
+  setTimeout(()=>goTab('e-home'),1500);
+}
+
+function toast(icon,msg){
+  const el=document.getElementById('toastEl');
+  document.getElementById('toastIcon').textContent=icon;
+  document.getElementById('toastMsg').textContent=msg;
+  el.classList.add('show');
+  clearTimeout(el._t);
+  el._t=setTimeout(()=>el.classList.remove('show'),3000);
+}
+
+function renderBar(id,data){
+  const el=document.getElementById(id);
+  if(!el) return;
+  const max=Math.max(...data.map(d=>d.v));
+  el.innerHTML=data.map(d=>{
+    const c=d.v>=80?'var(--green)':d.v>=60?'var(--amber)':'var(--red)';
+    const h=Math.round((d.v/max)*82);
+    return `<div class="bcol"><div class="bfill" style="height:${h}px;background:${c};opacity:.85"></div><div class="blabel">${d.l}<br><span style="color:var(--t2);font-weight:700">${d.v}%</span></div></div>`;
+  }).join('');
+}
+
+function renderCharts(t){
+  requestAnimationFrame(()=>{
+    if(t==='a-home'||t==='a-ana'||t==='a2-chart') renderBar('a-chart',[{l:'Eng',v:84},{l:'Sales',v:91},{l:'Ops',v:67},{l:'HR',v:78},{l:'Fin',v:72},{l:'Prod',v:88}]);
+    if(t==='a-ana') renderBar('a2-chart',[{l:'Eng',v:84},{l:'Sales',v:91},{l:'Ops',v:67},{l:'HR',v:78},{l:'Fin',v:72},{l:'Prod',v:88}]);
+    if(t==='e-ana') renderBar('e-chart',[{l:'G1',v:87},{l:'G2',v:64},{l:'G3',v:100},{l:'G4',v:30}]);
+    if(t==='m-ana') renderBar('m-chart',[{l:'Priya',v:82},{l:'Aryan',v:91},{l:'Neha',v:95},{l:'Rohit',v:45},{l:'Sneha',v:88}]);
+  });
+}
+
+// Init
+renderGoals();
+renderBar('a-chart',[{l:'Eng',v:84},{l:'Sales',v:91},{l:'Ops',v:67},{l:'HR',v:78},{l:'Fin',v:72},{l:'Prod',v:88}]);
+</script>
 </body>
 </html>
